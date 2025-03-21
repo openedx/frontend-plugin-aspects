@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base",
+    "config:recommended",
     "schedule:weekly",
     ":automergeLinters",
     ":automergeMinor",
@@ -24,9 +24,15 @@
       "automerge": true
     },
     {
-      "matchPackagePatterns": ["@edx", "@openedx"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true,
+      "matchPackageNames": [
+        "/@edx/",
+        "/@openedx/"
+      ]
     }
   ],
   "timezone": "America/New_York"
