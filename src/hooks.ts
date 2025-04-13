@@ -31,9 +31,15 @@ const fetchGuestTokenFromBackend = async (courseId: string) => {
   return data.guestToken;
 };
 
+type CourseRunFilterConfig = {
+  native_filters: string,
+}
+
 type DashBoardConfig = {
-    supersetUrl: string,
-    dashboardId: string,
+  supersetUrl: string,
+  dashboardId: string,
+  defaultCourseRun: string,
+  courseRuns: CourseRunFilterConfig[],
 }
 
 export const useDashboardEmbed = (containerId: string, usageKey: string, visible: boolean) => {

@@ -1,9 +1,9 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
-  Button, Card, Icon, IconButton, IconButtonWithTooltip, Stack,
+  Button, Icon, IconButton, IconButtonWithTooltip, Stack,
 } from '@openedx/paragon';
 import {
-  ArrowBack, AutoGraph, ChevronRight, Close, ViewAgenda, VideoCamera, Edit as EditIcon,
+  ArrowBack, AutoGraph, ChevronRight, Close, ViewAgenda, VideoCamera, Edit as EditIcon, SchoolOutline,
 } from '@openedx/paragon/icons';
 import * as React from 'react';
 import { useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import { useParams } from 'react-router-dom';
 import { Block, useBlockData, useDashboardEmbed } from '../hooks';
 import messages from '../messages';
 import { AspectsSidebarContext } from './AspectsSidebarContext';
+import "../styles.css";
 
 function* getGradedSubsections(sectionsList) {
   for (const section of sectionsList) {
@@ -35,21 +36,27 @@ const CourseContentList = ({ title, contentList, icon }:CourseContentListProps) 
   } = React.useContext(AspectsSidebarContext);
 
   return (
-    <div className="d-flex flex-column shadow p-2 my-2 bg-white">
-      <h4>{title}</h4>
+    <div className="d-flex flex-column my-4 px-3 bg-white border-bottom border-light">
+      <h4 className="h4 mb-4">{title}</h4>
       {contentList?.map(block => (
         <Button
-          className="d-flex flex-row justify-content-start flex-grow-1 my-1"
+          className="d-flex flex-row justify-content-start flex-grow-1 mb-2 py-1 px-0"
           variant="inline"
           onClick={() => {
             setLocation(block.id);
             setSidebarTitle(block.displayName);
           }}
         >
-          <Icon src={icon} aria-hidden />
-          <span className="d-flex flex-grow-1 text-left ml-2">
-            {block.displayName}
-          </span>
+          <h5 className="h5 flex-grow-1 text-left d-flex">
+            <Icon
+              src={icon}
+              size="xs"
+              className="mr-2 text-gray"
+              style={{verticalAlign: "middle"}}
+              aria-hidden
+            />
+            <span>{block.displayName}</span>
+          </h5>
           <Icon src={ChevronRight} aria-hidden />
         </Button>
       ))}
@@ -75,45 +82,50 @@ export const AspectsSidebar = () => {
   const gradedSubsections = sectionsList ? Array.from(getGradedSubsections(sectionsList)) : null;
 
   return sidebarOpen && (
-    <Card className="rounded position-sticky" style={{ top: '2rem' }}>
-      <div className="sidebar-header d-flex flex-column shadow p-2 bg-white">
-        <Stack className="course-unit-sidebar-header" direction="horizontal">
-          <h3 className="course-unit-sidebar-header-title m-0 d-flex align-items-center flex-grow-1">
-            {intl.formatMessage(messages.analyticsLabel)} <Icon
+    <div className="bg-white">
+      <Stack className="sidebar-header">
+        <Stack className="course-unit-sidebar-header px-4 pt-4" direction="horizontal">
+          <h5 className="course-unit-sidebar-header-title h5 flex-grow-1 text-gray">
+            {intl.formatMessage(messages.analyticsLabel)}
+            <Icon
               src={AutoGraph}
+              size="xs"
+              className="d-inline-block ml-1"
               aria-hidden
+              style={{verticalAlign: "middle"}}
             />
-            <IconButtonWithTooltip
-              className="ml-auto"
-              tooltipContent={intl.formatMessage(messages.closeButtonLabel)}
-              tooltipPlacement="top"
-              alt={intl.formatMessage(messages.closeButtonLabel)}
-              src={Close}
-              iconAs={Icon}
-              variant="black"
-              onClick={() => {
-                setSidebarOpen(false);
-              }}
-            />
-          </h3>
-        </Stack>
-        <div className="d-flex flex-row align-items-center my-2">
-          {location && (
-          <IconButton
-            alt={intl.formatMessage(messages.backButtonLabel)}
-            src={ArrowBack}
+          </h5>
+          <IconButtonWithTooltip
+            className="ml-auto"
+            tooltipContent={intl.formatMessage(messages.closeButtonLabel)}
+            tooltipPlacement="top"
+            alt={intl.formatMessage(messages.closeButtonLabel)}
+            src={Close}
             iconAs={Icon}
             variant="black"
-            onClick={() => setLocation(null)}
-            size="inline"
+            onClick={() => {
+              setSidebarOpen(false);
+            }}
+            size="sm"
           />
-          )}
+        </Stack>
+        <h3 className="h3 px-4 pb-4 mb-0 border-bottom">
+          <IconButton
+            alt={intl.formatMessage(messages.backButtonLabel)}
+            src={location ? ArrowBack: SchoolOutline}
+            iconAs={Icon}
+            onClick={() => setLocation(null)}
+            size="sm"
+            style={{verticalAlign: "middle"}}
+            className="mr-2 text-gray bg-white"
+            variant="link"
+          />
           {location
             ? sidebarTitle
             : courseName}
-        </div>
-      </div>
-      <div id={dashboardContainerId} className="d-flex w-100" />
+        </h3>
+      </Stack>
+      <div id={dashboardContainerId} className="aspects-sidebar-embed-container d-flex w-100 mb-5" />
       {!location && (
       <>
         <CourseContentList
@@ -134,6 +146,6 @@ export const AspectsSidebar = () => {
       </>
       )}
       {error && <div>Error: {error.message}</div>}
-    </Card>
+    </div>
   );
 };

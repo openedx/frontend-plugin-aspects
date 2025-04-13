@@ -1,0 +1,5 @@
+.aspects-sidebar-embed-container > iframe {
+    width: 100%;
+    border: 0;
+    min-height: 20rem;
+}
