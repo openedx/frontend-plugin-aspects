@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "preinstall": "npm run build",
-    "build": "fedx-scripts babel -x .js,.jsx,.ts,.tsx src --out-dir dist --ignore **/*.test.jsx,**/*.test.js,**/setupTest.js",
+    "build": "fedx-scripts babel -x .js,.jsx,.ts,.tsx src --out-dir dist --ignore **/*.test.jsx,**/*.test.js,**/setupTest.js && cp src/*.css dist/",
     "i18n_extract": "fedx-scripts formatjs extract",
     "lint": "fedx-scripts eslint --ext .js --ext .jsx .",
     "lint:fix": "fedx-scripts eslint --fix --ext .js --ext .jsx .",
