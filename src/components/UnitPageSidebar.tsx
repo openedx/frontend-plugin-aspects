@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {AspectsSidebar} from './AspectsSidebar';
 import {Block} from "../hooks";
-import {ChromeReaderMode} from "@openedx/paragon/icons";
+import {BLOCK_TYPES} from "../constants";
 
 interface Props {
   courseId: string;
@@ -16,7 +16,7 @@ export const UnitPageSidebar = ({courseId, blockId, unitTitle, verticalBlocks}: 
 
   return <AspectsSidebar
     title={unitTitle}
-    icon={ChromeReaderMode}
+    blockType={BLOCK_TYPES.vertical}
     hasDashboard={false}
     dashboardId={blockId}
     subsections={null}

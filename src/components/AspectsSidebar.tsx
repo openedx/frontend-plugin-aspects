@@ -1,15 +1,6 @@
 import {useIntl} from '@edx/frontend-platform/i18n';
-import {Alert, Button, Icon, IconButton, IconButtonWithTooltip, Spinner, Stack,} from '@openedx/paragon';
-import {
-  ArrowBack,
-  AutoGraph,
-  ChevronRight,
-  Close,
-  Edit as EditIcon,
-  SchoolOutline,
-  VideoCamera,
-  ViewAgenda,
-} from '@openedx/paragon/icons';
+import {Alert, Button, Icon, IconButton, IconButtonWithTooltip, Spinner, Stack, Sticky,} from '@openedx/paragon';
+import {ArrowBack, AutoGraph, ChevronRight, Close,} from '@openedx/paragon/icons';
 import * as React from 'react';
 import {useParams} from 'react-router-dom';
 import {Block, fetchGuestTokenFromBackend, useDashboardConfig,} from '../hooks';
@@ -17,21 +8,30 @@ import messages from '../messages';
 import {AspectsSidebarContext} from './AspectsSidebarContext';
 import "../styles.css";
 import {embedDashboard} from "@superset-ui/embedded-sdk";
+import {BLOCK_TYPES, ICON_MAP} from "../constants";
+// @ts-ignore
+import {useIframe} from 'CourseAuthoring/course-unit/context/hooks';
+// @ts-ignore
+import { IframeContext } from 'CourseAuthoring/course-unit/context/iFrameContext';
 
 
 interface CourseContentListProps {
   title: string,
   contentList?: Block[] | null,
   icon: React.ReactNode,
+  activateDashboard: (block: Block) => void,
 }
 
-const CourseContentList = ({title, contentList, icon}: CourseContentListProps) => {
-  const {
-    setLocation,
-    setSidebarTitle,
-  } = React.useContext(AspectsSidebarContext);
+const CourseContentList = ({title, contentList, icon, activateDashboard}: CourseContentListProps) => {
+  // The IframeContextProvider is only enabled in the Unit Page. The `useIframe` hook
+  // can be used only with the provider. So here the context is first checked before
+  // the hook is called.
+  const ctx = React.useContext(IframeContext);
+  const {sendMessageToIframe} = ctx ? useIframe() : {};
 
-  if (!contentList || !contentList.length) { return; }
+  if (!contentList || !contentList.length) {
+    return;
+  }
 
   return (
     <div className="d-flex flex-column rounded-bottom py-4 px-3 bg-white border-top border-light">
@@ -42,8 +42,10 @@ const CourseContentList = ({title, contentList, icon}: CourseContentListProps) =
           className="d-flex flex-row justify-content-start flex-grow-1 mb-2 py-1 px-0"
           variant="inline"
           onClick={() => {
-            setLocation(block.id);
-            setSidebarTitle(block.displayName);
+            activateDashboard(block);
+            if (!!ctx) {
+              sendMessageToIframe("scrollToXBlock", {locator: block.id});
+            }
           }}
         >
           <h5 className="h5 flex-grow-1 text-left d-flex align-items-center">
@@ -69,6 +71,9 @@ const Dashboard = ({usageKey}: { usageKey: string }) => {
 
   React.useEffect(() => {
     if (!dashboardConfig?.supersetUrl || !dashboardConfig?.dashboardId) {
+      // The Iframe needs to be explicitly removed as it is populated by the
+      // Superset SDK and doesn't update on React State changes.
+      document.getElementById(dashboardContainerId).innerHTML = '';
       return;
     }
     (async () => {
@@ -90,33 +95,27 @@ const Dashboard = ({usageKey}: { usageKey: string }) => {
             },
           },
         });
-
-        const container = document.getElementById(dashboardContainerId);
-        const iframe = container.querySelector('iframe');
-        console.log(iframe.contentWindow.innerHeight);
-
       } catch (e) {
-        console.error(e);
         return;
       }
     })();
   }, [dashboardConfig]);
 
   return (
-    <div
-      id={dashboardContainerId}
-      className="aspects-sidebar-embed-container d-flex w-100"
-    >
-      {loading && <Spinner animation="border" className="mie-3" screenReaderText="loading"/>}
-    </div>
+    <>
+      <div id={dashboardContainerId} className="aspects-sidebar-embed-container d-flex w-100"/>
+      {loading && !error && <Spinner animation="border" className="mie-3" screenReaderText="loading"/>}
+    </>
   );
 
 }
 
 
-interface Props {
+interface AspectsSidebarProps {
   title: string;
-  icon: React.FC;
+  blockType: BLOCK_TYPES;
+  // The Unit page level metrics are currently not implemented.
+  // This property is used to track it, so we can correctly show "No metrics" alert.
   hasDashboard: boolean;
   dashboardId: string;
   subsections: Block[] | null;
@@ -126,77 +125,111 @@ interface Props {
 
 
 export const AspectsSidebar = ({
-  title, icon, hasDashboard, dashboardId, subsections, problemBlocks, videoBlocks,
-}: Props) => {
+  title, blockType, hasDashboard, dashboardId, subsections, problemBlocks, videoBlocks,
+}: AspectsSidebarProps) => {
   const intl = useIntl();
-  const { sidebarOpen, setSidebarOpen, setLocation } = React.useContext(AspectsSidebarContext);
+  const {sidebarOpen, setSidebarOpen, setLocation} = React.useContext(AspectsSidebarContext);
+  const [activeDashboard, setActiveDashboard] = React.useState<string>(dashboardId);
+  const [activeTitle, setActiveTitle] = React.useState<string>(title);
+  const [activeBlockType, setActiveBlockType] = React.useState<BLOCK_TYPES>(blockType);
+
+  const activateDashboard = (block: Block) => {
+    setActiveDashboard(block.id);
+    setActiveTitle(block.name || block.displayName);
+    const blockType = block.category || block.type || block.blockType;
+    setActiveBlockType(BLOCK_TYPES[blockType]);
+  }
+  // reset all the active values to props
+  const goBack = () => {
+    setActiveDashboard(dashboardId);
+    setActiveTitle(title);
+    setActiveBlockType(blockType);
+  }
 
   return sidebarOpen && (
-    <div className="bg-white rounded shadow">
-      <Stack className="sidebar-header">
-        <Stack className="course-unit-sidebar-header px-4 pt-4" direction="horizontal">
-          <h5 className="course-unit-sidebar-header-title h5 flex-grow-1 text-gray">
-            {intl.formatMessage(messages.analyticsLabel)}
-            <Icon
-              src={AutoGraph}
-              size="xs"
-              className="d-inline-block ml-1"
-              aria-hidden
-              style={{verticalAlign: "middle"}}
-            />
-          </h5>
-          <IconButtonWithTooltip
-            className="ml-auto"
-            tooltipContent={intl.formatMessage(messages.closeButtonLabel)}
-            tooltipPlacement="top"
-            alt={intl.formatMessage(messages.closeButtonLabel)}
-            src={Close}
-            iconAs={Icon}
-            variant="black"
-            onClick={() => {
-              setSidebarOpen(false);
-            }}
-            size="sm"
-          />
-        </Stack>
-        <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center">
-          <IconButton
-            alt={intl.formatMessage(messages.backButtonLabel)}
-            src={ArrowBack}
-            iconAs={Icon}
-            onClick={() => setLocation(null)}
-            size="sm"
-            style={{display: "none"}}
-            className="text-gray bg-white"
-          />
-          <Icon
-            src={icon}
-            size="sm"
-            className="d-inline-block mr-1"
-            aria-hidden
-          />
-          <span>{title}</span>
-        </h3>
-      </Stack>
-      {hasDashboard && <Dashboard usageKey={dashboardId}/>}
-      <CourseContentList
-        title={intl.formatMessage(messages.gradedSubsectionAnalytics)}
-        contentList={subsections}
-        icon={ViewAgenda}
-      />
-      <CourseContentList
-        title={intl.formatMessage(messages.problemAnalytics)}
-        contentList={problemBlocks}
-        icon={EditIcon}
-      />
-      <CourseContentList
-        title={intl.formatMessage(messages.videoAnalytics)}
-        contentList={videoBlocks}
-        icon={VideoCamera}
-      />
-      {(!hasDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
-        && <Alert variant="danger" className="mb-0">No analytics available!</Alert>
-      }
+    <div className="w-100 h-100">
+      <Sticky className="shadow rounded" offset={2}>
+        <div className="bg-white rounded w-100">
+          <Stack className="sidebar-header">
+            <Stack className="course-unit-sidebar-header px-4 pt-4" direction="horizontal">
+              <h5 className="course-unit-sidebar-header-title h5 flex-grow-1 text-gray">
+                {intl.formatMessage(messages.analyticsLabel)}
+                <Icon
+                  src={AutoGraph}
+                  size="xs"
+                  className="d-inline-block ml-1"
+                  aria-hidden
+                  style={{verticalAlign: "middle"}}
+                />
+              </h5>
+              <IconButtonWithTooltip
+                className="ml-auto"
+                tooltipContent={intl.formatMessage(messages.closeButtonLabel)}
+                tooltipPlacement="top"
+                alt={intl.formatMessage(messages.closeButtonLabel)}
+                src={Close}
+                iconAs={Icon}
+                variant="black"
+                onClick={() => {
+                  setSidebarOpen(false);
+                }}
+                size="sm"
+              />
+            </Stack>
+            <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center">
+              {title !== activeTitle && (
+                <IconButton
+                  className="mr-2"
+                  alt={intl.formatMessage(messages.backButtonLabel)}
+                  src={ArrowBack}
+                  iconAs={Icon}
+                  onClick={() => goBack()}
+                  size="sm"
+                />
+              )}
+              <Icon
+                src={ICON_MAP[activeBlockType]}
+                size="sm"
+                className="d-inline-block mr-2 text-gray"
+                aria-hidden
+              />
+              <span>{activeTitle}</span>
+            </h3>
+          </Stack>
+          <Dashboard usageKey={activeDashboard}/>
+          {
+            activeBlockType === "course" && (
+              <CourseContentList
+                title={intl.formatMessage(messages.gradedSubsectionAnalytics)}
+                contentList={subsections}
+                icon={ICON_MAP[BLOCK_TYPES.sequential]}
+                activateDashboard={activateDashboard}
+              />
+            )
+          }
+          {
+            ((activeBlockType === "course") || (activeBlockType === "vertical")) && (
+              <>
+                <CourseContentList
+                  title={intl.formatMessage(messages.problemAnalytics)}
+                  contentList={problemBlocks}
+                  icon={ICON_MAP[BLOCK_TYPES.problem]}
+                  activateDashboard={activateDashboard}
+                />
+                <CourseContentList
+                  title={intl.formatMessage(messages.videoAnalytics)}
+                  contentList={videoBlocks}
+                  icon={ICON_MAP[BLOCK_TYPES.video]}
+                  activateDashboard={activateDashboard}
+                />
+              </>
+            )
+          }
+          {(!hasDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
+            && <Alert variant="danger" className="mb-0">No analytics available!</Alert>
+          }
+        </div>
+      </Sticky>
     </div>
   );
 };
