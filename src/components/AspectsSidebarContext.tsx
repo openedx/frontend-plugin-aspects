@@ -2,13 +2,13 @@ import * as React from 'react';
 import { ReactNode } from 'react';
 
 export type SidebarContext = {
-    sidebarOpen: boolean,
-    setSidebarOpen: (value: boolean) => void,
-    location: string,
-    setLocation: (value: string) => void,
-    sidebarTitle: string,
-    setSidebarTitle: (value: string) => void,
-}
+  sidebarOpen: boolean,
+  setSidebarOpen: (value: boolean) => void,
+  location: string,
+  setLocation: (value: string) => void,
+  sidebarTitle: string,
+  setSidebarTitle: (value: string) => void,
+};
 
 export const AspectsSidebarContext = React.createContext<SidebarContext>({
   sidebarOpen: false,

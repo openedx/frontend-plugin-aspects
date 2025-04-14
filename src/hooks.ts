@@ -6,25 +6,25 @@ import * as React from 'react';
 export type UsageId = string;
 
 export type Block = {
-    id: UsageId;
-    type: string;
-    displayName: string;
-    graded: boolean;
-    // block type of things from API
-    category: string;
+  id: UsageId;
+  type: string;
+  displayName: string;
+  graded: boolean;
+  // block type of things from API
+  category: string;
 
-    // vertical block
-    blockType: string;
-    name: string;
+  // vertical block
+  blockType: string;
+  name: string;
 };
 
 export type BlockMap = {
-    [blockId: UsageId]: Block;
+  [blockId: UsageId]: Block;
 };
 
 type BlockResponse = {
-    blocks: BlockMap;
-    root: UsageId;
+  blocks: BlockMap;
+  root: UsageId;
 };
 
 const guestTokenUrl = (courseId: string) => `${getConfig().LMS_BASE_URL}/aspects/superset_guest_token/${courseId}`;
@@ -38,19 +38,19 @@ export const fetchGuestTokenFromBackend = async (courseId: string) => {
 
 type CourseRunFilterConfig = {
   native_filters: string,
-}
+};
 
 export type DashBoardConfig = {
   supersetUrl: string,
   dashboardId: string,
   defaultCourseRun: string,
   courseRuns: CourseRunFilterConfig[],
-}
+};
 
 export const useDashboardConfig = (usageKey: string) => {
   const [config, setConfig] = React.useState<DashBoardConfig | null>();
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string>("");
+  const [error, setError] = React.useState<string>('');
 
   React.useEffect(() => {
     if (!usageKey) { return; }
@@ -70,8 +70,8 @@ export const useDashboardConfig = (usageKey: string) => {
     })();
   }, [usageKey]);
 
-  return {loading, error, config};
-}
+  return { loading, error, config };
+};
 
 const getCourseBlocksUrl = (courseId: string) => {
   const url = new URL(`${getConfig().LMS_BASE_URL}/api/courses/v1/blocks/`);
@@ -87,7 +87,7 @@ export const useCourseBlocks = (courseId?: UsageId) => {
     queryKey: ['course-blocks', courseId],
     queryFn: async () => getAuthenticatedHttpClient().get(getCourseBlocksUrl(courseId)),
     enabled: !!courseId,
-    select: (response: {data:BlockResponse}) => {
+    select: (response: { data:BlockResponse }) => {
       const videos = [];
       const problems = [];
       Object.values(response.data.blocks).forEach((block) => {
