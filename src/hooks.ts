@@ -11,6 +11,11 @@ export type Block = {
     id: UsageId;
     type: string;
     displayName: string;
+    graded: boolean;
+
+    // vertical block
+    blockType: string;
+    name: string;
 };
 
 export type BlockMap = {
@@ -25,7 +30,7 @@ type BlockResponse = {
 const guestTokenUrl = (courseId: string) => `${getConfig().LMS_BASE_URL}/aspects/superset_guest_token/${courseId}`;
 const dashboardUrl = (usageKey: string) => `${getConfig().LMS_BASE_URL}/aspects/superset_in_context_dashboard/${usageKey}`;
 
-const fetchGuestTokenFromBackend = async (courseId: string) => {
+export const fetchGuestTokenFromBackend = async (courseId: string) => {
   const { data } = await getAuthenticatedHttpClient()
     .get(guestTokenUrl(courseId));
   return data.guestToken;
@@ -35,18 +40,45 @@ type CourseRunFilterConfig = {
   native_filters: string,
 }
 
-type DashBoardConfig = {
+export type DashBoardConfig = {
   supersetUrl: string,
   dashboardId: string,
   defaultCourseRun: string,
   courseRuns: CourseRunFilterConfig[],
 }
 
+export const useDashboardConfig = (usageKey: string) => {
+  const [config, setConfig] = React.useState<DashBoardConfig | null>();
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (!usageKey) { return; }
+    (async () => {
+      setLoading(true);
+      try {
+        const { data } = await getAuthenticatedHttpClient()
+          .get(dashboardUrl(usageKey));
+        setConfig(data);
+        setLoading(false);
+      } catch (e) {
+        setLoading(false);
+        console.log("useDashboard error: ", e)
+        setError(JSON.parse(e.customAttributes?.httpErrorResponseData ?? "{}")?.detail);
+      }
+    })();
+  }, [usageKey]);
+
+  return {loading, error, config};
+}
+
+
 export const useDashboardEmbed = (containerId: string, usageKey: string, visible: boolean) => {
   const { courseId } = useParams();
   const [dashboardConfig, setDashboardConfig] = React.useState<DashBoardConfig | null>();
   const [loaded, setLoaded] = React.useState<boolean>(false);
   const [error, setError] = React.useState<Error | null>(null);
+  console.log("Calling useDashboardEmbed with", containerId, usageKey, visible);
 
   React.useEffect(() => {
     if (!usageKey) { return; }
@@ -65,6 +97,7 @@ export const useDashboardEmbed = (containerId: string, usageKey: string, visible
   React.useEffect(() => {
     if (!visible || !dashboardConfig?.supersetUrl || !dashboardConfig?.dashboardId) { return; }
     (async () => {
+      console.log("Calling the embedDashboard for ", dashboardConfig);
       try {
         await embedDashboard({
           id: dashboardConfig.dashboardId,
@@ -101,7 +134,7 @@ const getCourseBlocksUrl = (courseId: string) => {
   return url.toString();
 };
 
-export const useBlockData = (courseId?: UsageId) => {
+export const useCourseBlocks = (courseId?: UsageId) => {
   const { data, error } = useQuery({
     queryKey: ['course-blocks', courseId],
     queryFn: async () => getAuthenticatedHttpClient().get(getCourseBlocksUrl(courseId)),
