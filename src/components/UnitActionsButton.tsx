@@ -6,8 +6,8 @@ import messages from '../messages';
 import { AspectsSidebarContext, SidebarContext } from './AspectsSidebarContext';
 
 interface UnitActionsButtonProps {
-    unit: { id: string, displayName: string } | undefined,
-    subsection: {id: string, displayName: string, graded: boolean},
+  unit: { id: string, displayName: string } | undefined,
+  subsection: { id: string, displayName: string, graded: boolean },
 }
 
 export const UnitActionsButton = ({

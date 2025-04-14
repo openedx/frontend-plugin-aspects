@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {Block, useCourseBlocks} from '../hooks';
-import {AspectsSidebar} from "./AspectsSidebar";
-import {BLOCK_TYPES} from "../constants";
+import { Block, useCourseBlocks } from '../hooks';
+import { AspectsSidebar } from './AspectsSidebar';
+import { BlockTypes } from '../constants';
 
 interface ChildInfo {
   children: Block[]
@@ -29,17 +29,19 @@ function* getGradedSubsections(sections: Section[]) {
   }
 }
 
-export const CourseOutlineSidebar = ({courseId, courseName, sections}: Props) => {
+export const CourseOutlineSidebar = ({ courseId, courseName, sections }: Props) => {
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
-  const {data} = useCourseBlocks(courseId);
+  const { data } = useCourseBlocks(courseId);
 
-  return <AspectsSidebar
-    title={courseName}
-    blockType={BLOCK_TYPES.course}
-    hasDashboard={true}
-    dashboardId={courseId}
-    subsections={gradedSubsections}
-    problemBlocks={data?.problems}
-    videoBlocks={data?.videos}
-  />;
+  return (
+    <AspectsSidebar
+      title={courseName}
+      blockType={BlockTypes.course}
+      hasDashboard
+      dashboardId={courseId}
+      subsections={gradedSubsections}
+      problemBlocks={data?.problems}
+      videoBlocks={data?.videos}
+    />
+  );
 };
