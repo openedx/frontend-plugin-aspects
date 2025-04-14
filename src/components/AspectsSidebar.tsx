@@ -1,15 +1,18 @@
-import {useIntl} from '@edx/frontend-platform/i18n';
-import {Alert, Button, Icon, IconButton, IconButtonWithTooltip, Spinner, Stack, Sticky,} from '@openedx/paragon';
-import {ArrowBack, AutoGraph, ChevronRight, Close,} from '@openedx/paragon/icons';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import {
+  Alert, Button, Icon, IconButton, IconButtonWithTooltip, Spinner, Stack, Sticky,
+} from '@openedx/paragon';
+import {
+  ArrowBack, AutoGraph, ChevronRight, Close,
+} from '@openedx/paragon/icons';
 import * as React from 'react';
-import {useParams} from 'react-router-dom';
-import {Block, fetchGuestTokenFromBackend, useDashboardConfig,} from '../hooks';
+import { useParams } from 'react-router-dom';
+import { embedDashboard } from '@superset-ui/embedded-sdk';
+import { Block, fetchGuestTokenFromBackend, useDashboardConfig } from '../hooks';
 import messages from '../messages';
-import {AspectsSidebarContext} from './AspectsSidebarContext';
-import "../styles.css";
-import {embedDashboard} from "@superset-ui/embedded-sdk";
-import {BLOCK_TYPES, ICON_MAP} from "../constants";
-
+import { AspectsSidebarContext } from './AspectsSidebarContext';
+import '../styles.css';
+import { BlockTypes, ICON_MAP } from '../constants';
 
 interface CourseContentListProps {
   title: string,
@@ -18,7 +21,9 @@ interface CourseContentListProps {
   activateDashboard: (block: Block) => void,
 }
 
-const CourseContentList = ({title, contentList, icon, activateDashboard}: CourseContentListProps) => {
+const CourseContentList = ({
+  title, contentList, icon, activateDashboard,
+}: CourseContentListProps) => {
   if (!contentList || !contentList.length) {
     return;
   }
@@ -42,17 +47,17 @@ const CourseContentList = ({title, contentList, icon, activateDashboard}: Course
             />
             <span>{block.displayName || block.name}</span>
           </h5>
-          <Icon src={ChevronRight} aria-hidden/>
+          <Icon src={ChevronRight} aria-hidden />
         </Button>
       ))}
     </div>
   );
 };
 
-const Dashboard = ({usageKey}: { usageKey: string }) => {
-  const {loading, error, config: dashboardConfig} = useDashboardConfig(usageKey);
+const Dashboard = ({ usageKey }: { usageKey: string }) => {
+  const { loading, error, config: dashboardConfig } = useDashboardConfig(usageKey);
   const dashboardContainerId = 'dashboard-container';
-  const {courseId} = useParams();
+  const { courseId } = useParams();
 
   React.useEffect(() => {
     if (!dashboardConfig?.supersetUrl || !dashboardConfig?.dashboardId) {
@@ -81,24 +86,22 @@ const Dashboard = ({usageKey}: { usageKey: string }) => {
           },
         });
       } catch (e) {
-        return;
+
       }
     })();
   }, [dashboardConfig]);
 
   return (
     <>
-      <div id={dashboardContainerId} className="aspects-sidebar-embed-container d-flex w-100"/>
-      {loading && !error && <Spinner animation="border" className="mie-3" screenReaderText="loading"/>}
+      <div id={dashboardContainerId} className="aspects-sidebar-embed-container d-flex w-100" />
+      {loading && !error && <Spinner animation="border" className="mie-3" screenReaderText="loading" />}
     </>
   );
-
-}
-
+};
 
 interface AspectsSidebarProps {
   title: string;
-  blockType: BLOCK_TYPES;
+  blockType: BlockTypes;
   // The Unit page level metrics are currently not implemented.
   // This property is used to track it, so we can correctly show "No metrics" alert.
   hasDashboard: boolean;
@@ -108,7 +111,6 @@ interface AspectsSidebarProps {
   videoBlocks: Block[] | null;
   blockActivatedCallback?: (block: Block) => void;
 }
-
 
 export const AspectsSidebar = ({
   title,
@@ -121,27 +123,27 @@ export const AspectsSidebar = ({
   blockActivatedCallback,
 }: AspectsSidebarProps) => {
   const intl = useIntl();
-  const {sidebarOpen, setSidebarOpen, setLocation} = React.useContext(AspectsSidebarContext);
+  const { sidebarOpen, setSidebarOpen, setLocation } = React.useContext(AspectsSidebarContext);
   const [activeDashboard, setActiveDashboard] = React.useState<string>(dashboardId);
   const [activeTitle, setActiveTitle] = React.useState<string>(title);
-  const [activeBlockType, setActiveBlockType] = React.useState<BLOCK_TYPES>(blockType);
+  const [activeBlockType, setActiveBlockType] = React.useState<BlockTypes>(blockType);
 
   const activateDashboard = (block: Block) => {
     setActiveDashboard(block.id);
     setActiveTitle(block.name || block.displayName);
     const currentBlockType = block.category || block.type || block.blockType;
-    setActiveBlockType(BLOCK_TYPES[currentBlockType]);
+    setActiveBlockType(BlockTypes[currentBlockType]);
     // call the callback only in unit-page
-    if (blockType === BLOCK_TYPES.vertical) {
+    if (blockType === BlockTypes.vertical) {
       blockActivatedCallback(block);
     }
-  }
+  };
   // reset all the active values to props
   const goBack = () => {
     setActiveDashboard(dashboardId);
     setActiveTitle(title);
     setActiveBlockType(blockType);
-  }
+  };
 
   return sidebarOpen && (
     <div className="w-100 h-100">
@@ -156,7 +158,7 @@ export const AspectsSidebar = ({
                   size="xs"
                   className="d-inline-block ml-1"
                   aria-hidden
-                  style={{verticalAlign: "middle"}}
+                  style={{ verticalAlign: 'middle' }}
                 />
               </h5>
               <IconButtonWithTooltip
@@ -193,38 +195,37 @@ export const AspectsSidebar = ({
               <span>{activeTitle}</span>
             </h3>
           </Stack>
-          <Dashboard usageKey={activeDashboard}/>
+          <Dashboard usageKey={activeDashboard} />
           {
-            activeBlockType === "course" && (
+            activeBlockType === 'course' && (
               <CourseContentList
                 title={intl.formatMessage(messages.gradedSubsectionAnalytics)}
                 contentList={subsections}
-                icon={ICON_MAP[BLOCK_TYPES.sequential]}
+                icon={ICON_MAP[BlockTypes.sequential]}
                 activateDashboard={activateDashboard}
               />
             )
           }
           {
-            ((activeBlockType === "course") || (activeBlockType === "vertical")) && (
+            ((activeBlockType === 'course') || (activeBlockType === 'vertical')) && (
               <>
                 <CourseContentList
                   title={intl.formatMessage(messages.problemAnalytics)}
                   contentList={problemBlocks}
-                  icon={ICON_MAP[BLOCK_TYPES.problem]}
+                  icon={ICON_MAP[BlockTypes.problem]}
                   activateDashboard={activateDashboard}
                 />
                 <CourseContentList
                   title={intl.formatMessage(messages.videoAnalytics)}
                   contentList={videoBlocks}
-                  icon={ICON_MAP[BLOCK_TYPES.video]}
+                  icon={ICON_MAP[BlockTypes.video]}
                   activateDashboard={activateDashboard}
                 />
               </>
             )
           }
           {(!hasDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
-            && <Alert variant="danger" className="mb-0">No analytics available!</Alert>
-          }
+            && <Alert variant="danger" className="mb-0">No analytics available!</Alert>}
         </div>
       </Sticky>
     </div>
