@@ -1,9 +1,7 @@
 import { getConfig, camelCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { embedDashboard } from '@superset-ui/embedded-sdk';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
-import { useParams } from 'react-router-dom';
 
 export type UsageId = string;
 
@@ -12,6 +10,8 @@ export type Block = {
     type: string;
     displayName: string;
     graded: boolean;
+    // block type of things from API
+    category: string;
 
     // vertical block
     blockType: string;
@@ -61,69 +61,17 @@ export const useDashboardConfig = (usageKey: string) => {
           .get(dashboardUrl(usageKey));
         setConfig(data);
         setLoading(false);
+        setError('');
       } catch (e) {
         setLoading(false);
-        console.log("useDashboard error: ", e)
-        setError(JSON.parse(e.customAttributes?.httpErrorResponseData ?? "{}")?.detail);
+        setConfig(null);
+        setError('Dashboard not found.');
       }
     })();
   }, [usageKey]);
 
   return {loading, error, config};
 }
-
-
-export const useDashboardEmbed = (containerId: string, usageKey: string, visible: boolean) => {
-  const { courseId } = useParams();
-  const [dashboardConfig, setDashboardConfig] = React.useState<DashBoardConfig | null>();
-  const [loaded, setLoaded] = React.useState<boolean>(false);
-  const [error, setError] = React.useState<Error | null>(null);
-  console.log("Calling useDashboardEmbed with", containerId, usageKey, visible);
-
-  React.useEffect(() => {
-    if (!usageKey) { return; }
-    (async () => {
-      setError(null);
-      try {
-        const { data } = await getAuthenticatedHttpClient()
-          .get(dashboardUrl(usageKey));
-        setDashboardConfig(data);
-      } catch (e) {
-        setError(e);
-      }
-    })();
-  }, [usageKey]);
-
-  React.useEffect(() => {
-    if (!visible || !dashboardConfig?.supersetUrl || !dashboardConfig?.dashboardId) { return; }
-    (async () => {
-      console.log("Calling the embedDashboard for ", dashboardConfig);
-      try {
-        await embedDashboard({
-          id: dashboardConfig.dashboardId,
-          supersetDomain: dashboardConfig.supersetUrl,
-          mountPoint: document.getElementById(containerId),
-          fetchGuestToken: async () => fetchGuestTokenFromBackend(courseId),
-          dashboardUiConfig: {
-            hideTitle: true,
-            hideTab: true,
-            filters: {
-              visible: false,
-              expanded: false,
-            },
-            urlParams: {
-              native_filters: dashboardConfig.courseRuns[dashboardConfig.defaultCourseRun].native_filters,
-            },
-          },
-        });
-        setLoaded(true);
-      } catch (e) {
-        setError(e);
-      }
-    })();
-  }, [dashboardConfig, containerId, visible, courseId]);
-  return { loaded, error };
-};
 
 const getCourseBlocksUrl = (courseId: string) => {
   const url = new URL(`${getConfig().LMS_BASE_URL}/api/courses/v1/blocks/`);
