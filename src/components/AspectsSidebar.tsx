@@ -9,10 +9,8 @@ import {AspectsSidebarContext} from './AspectsSidebarContext';
 import "../styles.css";
 import {embedDashboard} from "@superset-ui/embedded-sdk";
 import {BLOCK_TYPES, ICON_MAP} from "../constants";
-// @ts-ignore
-import {useIframe} from 'CourseAuthoring/course-unit/context/hooks';
-// @ts-ignore
-import { IframeContext } from 'CourseAuthoring/course-unit/context/iFrameContext';
+import {useIframe} from 'CourseAuthoring/generic/hooks/context/hooks';
+import { IframeContext } from 'CourseAuthoring/generic/hooks/context/iFrameContext';
 
 
 interface CourseContentListProps {
@@ -27,7 +25,7 @@ const CourseContentList = ({title, contentList, icon, activateDashboard}: Course
   // can be used only with the provider. So here the context is first checked before
   // the hook is called.
   const ctx = React.useContext(IframeContext);
-  const {sendMessageToIframe} = ctx ? useIframe() : {};
+  const {sendMessageToIframe} = !!ctx ? useIframe() : {};
 
   if (!contentList || !contentList.length) {
     return;
