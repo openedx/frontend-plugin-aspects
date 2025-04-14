@@ -9,8 +9,6 @@ import {AspectsSidebarContext} from './AspectsSidebarContext';
 import "../styles.css";
 import {embedDashboard} from "@superset-ui/embedded-sdk";
 import {BLOCK_TYPES, ICON_MAP} from "../constants";
-import {useIframe} from 'CourseAuthoring/generic/hooks/context/hooks';
-import { IframeContext } from 'CourseAuthoring/generic/hooks/context/iFrameContext';
 
 
 interface CourseContentListProps {
@@ -21,12 +19,6 @@ interface CourseContentListProps {
 }
 
 const CourseContentList = ({title, contentList, icon, activateDashboard}: CourseContentListProps) => {
-  // The IframeContextProvider is only enabled in the Unit Page. The `useIframe` hook
-  // can be used only with the provider. So here the context is first checked before
-  // the hook is called.
-  const ctx = React.useContext(IframeContext);
-  const {sendMessageToIframe} = !!ctx ? useIframe() : {};
-
   if (!contentList || !contentList.length) {
     return;
   }
@@ -39,12 +31,7 @@ const CourseContentList = ({title, contentList, icon, activateDashboard}: Course
           key={block.id}
           className="d-flex flex-row justify-content-start flex-grow-1 mb-2 py-1 px-0"
           variant="inline"
-          onClick={() => {
-            activateDashboard(block);
-            if (!!ctx) {
-              sendMessageToIframe("scrollToXBlock", {locator: block.id});
-            }
-          }}
+          onClick={() => activateDashboard(block)}
         >
           <h5 className="h5 flex-grow-1 text-left d-flex align-items-center">
             <Icon
@@ -116,14 +103,22 @@ interface AspectsSidebarProps {
   // This property is used to track it, so we can correctly show "No metrics" alert.
   hasDashboard: boolean;
   dashboardId: string;
-  subsections: Block[] | null;
+  subsections?: Block[] | null;
   problemBlocks: Block[] | null;
   videoBlocks: Block[] | null;
+  blockActivatedCallback?: (block: Block) => void;
 }
 
 
 export const AspectsSidebar = ({
-  title, blockType, hasDashboard, dashboardId, subsections, problemBlocks, videoBlocks,
+  title,
+  blockType,
+  hasDashboard,
+  dashboardId,
+  subsections,
+  problemBlocks,
+  videoBlocks,
+  blockActivatedCallback,
 }: AspectsSidebarProps) => {
   const intl = useIntl();
   const {sidebarOpen, setSidebarOpen, setLocation} = React.useContext(AspectsSidebarContext);
@@ -134,8 +129,12 @@ export const AspectsSidebar = ({
   const activateDashboard = (block: Block) => {
     setActiveDashboard(block.id);
     setActiveTitle(block.name || block.displayName);
-    const blockType = block.category || block.type || block.blockType;
-    setActiveBlockType(BLOCK_TYPES[blockType]);
+    const currentBlockType = block.category || block.type || block.blockType;
+    setActiveBlockType(BLOCK_TYPES[currentBlockType]);
+    // call the callback only in unit-page
+    if (blockType === BLOCK_TYPES.vertical) {
+      blockActivatedCallback(block);
+    }
   }
   // reset all the active values to props
   const goBack = () => {
