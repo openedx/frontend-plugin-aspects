@@ -133,7 +133,7 @@ const Dashboard = ({ usageKey }: { usageKey: string }) => {
       <div
         ref={containerDiv}
         className="aspects-sidebar-embed-container d-flex w-100"
-        style={{ height: containerHeight }}
+        style={{ minHeight: containerHeight }}
       />
     </>
   );
@@ -163,7 +163,7 @@ export const AspectsSidebar = ({
   blockActivatedCallback,
 }: AspectsSidebarProps) => {
   const intl = useIntl();
-  const { sidebarOpen, setSidebarOpen, setLocation } = React.useContext(AspectsSidebarContext);
+  const { sidebarOpen, setSidebarOpen } = React.useContext(AspectsSidebarContext);
   const [activeDashboard, setActiveDashboard] = React.useState<string>(dashboardId);
   const [activeTitle, setActiveTitle] = React.useState<string>(title);
   const [activeBlockType, setActiveBlockType] = React.useState<BlockTypes>(blockType);
