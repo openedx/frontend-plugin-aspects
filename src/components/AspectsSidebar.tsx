@@ -1,13 +1,13 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
-  Alert, Button, Icon, IconButton, IconButtonWithTooltip, Spinner, Stack, Sticky,
+  Alert, Button, Icon, IconButton, IconButtonWithTooltip, Skeleton, Stack, Sticky,
 } from '@openedx/paragon';
 import {
-  ArrowBack, AutoGraph, ChevronRight, Close,
+  ArrowBack, AutoGraph, ChevronRight, ArrowDropDown, ArrowDropUp, Close,
 } from '@openedx/paragon/icons';
 import * as React from 'react';
 import { useParams } from 'react-router-dom';
-import { embedDashboard } from '@superset-ui/embedded-sdk';
+import { embedDashboard, EmbeddedDashboard, Size } from '@superset-ui/embedded-sdk';
 import { Block, fetchGuestTokenFromBackend, useDashboardConfig } from '../hooks';
 import messages from '../messages';
 import { AspectsSidebarContext } from './AspectsSidebarContext';
@@ -24,14 +24,13 @@ interface CourseContentListProps {
 const CourseContentList = ({
   title, contentList, icon, activateDashboard,
 }: CourseContentListProps) => {
-  if (!contentList || !contentList.length) {
-    return;
-  }
+  const intl = useIntl();
+  const [showCount, setShowCount] = React.useState<number>(5);
 
-  return (
+  return (contentList?.length) && (
     <div className="d-flex flex-column rounded-bottom py-4 px-3 bg-white border-top border-light">
       <h4 className="h4 mb-4">{title}</h4>
-      {contentList?.map(block => (
+      {contentList?.slice(0, showCount).map(block => (
         <Button
           key={block.id}
           className="d-flex flex-row justify-content-start flex-grow-1 mb-2 py-1 px-0"
@@ -50,28 +49,60 @@ const CourseContentList = ({
           <Icon src={ChevronRight} aria-hidden />
         </Button>
       ))}
+      {(contentList?.length > 5) && (
+        <Button
+          variant="tertiary"
+          size="sm"
+          iconAfter={showCount === 5 ? ArrowDropDown : ArrowDropUp}
+          onClick={() => setShowCount(showCount === 5 ? undefined : 5)}
+        >
+          { showCount === 5 ? intl.formatMessage(messages.showMore) : intl.formatMessage(messages.showLess) }
+        </Button>
+      )}
     </div>
   );
 };
 
 const Dashboard = ({ usageKey }: { usageKey: string }) => {
   const { loading, error, config: dashboardConfig } = useDashboardConfig(usageKey);
-  const dashboardContainerId = 'dashboard-container';
+  const containerDiv = React.useRef(null);
   const { courseId } = useParams();
+  const [containerHeight, setContainerHeight] = React.useState<number>(30);
 
   React.useEffect(() => {
+    // Hide the dashboard when navigating
+    setContainerHeight(0);
+
     if (!dashboardConfig?.supersetUrl || !dashboardConfig?.dashboardId) {
-      // The Iframe needs to be explicitly removed as it is populated by the
-      // Superset SDK and doesn't update on React State changes.
-      document.getElementById(dashboardContainerId).innerHTML = '';
       return;
     }
+
     (async () => {
+      let iframe: EmbeddedDashboard|null = null;
+      /**
+       * The Superset Embed SDK provides a `getScrollSize` method that can return
+       * the height and width of the iframe. However, the value is resolved as soon
+       * as the DOM finishes loading. The charts take a while to render fully making
+       * the value stale and the charts get hidden.
+       *
+       * The updateHeight method gets around this by using `setTimeout` to poll for
+       * the height. The polling is stopped when the height stops changing.
+       */
+      const updateHeight = async () => {
+        if (iframe) {
+          const size: Size = await iframe.getScrollSize();
+          if (size.height !== containerHeight) {
+            setContainerHeight(size.height);
+            setTimeout(updateHeight, 1000);
+          }
+        }
+      };
+
       try {
-        await embedDashboard({
+        iframe = await embedDashboard({
           id: dashboardConfig.dashboardId,
           supersetDomain: dashboardConfig.supersetUrl,
-          mountPoint: document.getElementById(dashboardContainerId),
+          mountPoint: containerDiv.current,
           fetchGuestToken: async () => fetchGuestTokenFromBackend(courseId),
           dashboardUiConfig: {
             hideTitle: true,
@@ -86,15 +117,24 @@ const Dashboard = ({ usageKey }: { usageKey: string }) => {
           },
         });
       } catch (e) {
-
+        console.error(e);
+      }
+      if (iframe) {
+        await updateHeight();
       }
     })();
-  }, [dashboardConfig]);
+    // `containerHeight` is skipped to prevent height changes from re-rendering iframes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboardConfig, courseId]);
 
   return (
     <>
-      <div id={dashboardContainerId} className="aspects-sidebar-embed-container d-flex w-100" />
-      {loading && !error && <Spinner animation="border" className="mie-3" screenReaderText="loading" />}
+      {loading && !error && <Skeleton />}
+      <div
+        ref={containerDiv}
+        className="aspects-sidebar-embed-container d-flex w-100"
+        style={{ height: containerHeight }}
+      />
     </>
   );
 };

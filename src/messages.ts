@@ -31,6 +31,16 @@ const messages = defineMessages({
     defaultMessage: 'Problem Analytics',
     description: 'Title for card showing list of problem blocks for analytics.',
   },
+  showMore: {
+    id: 'aspects.button.show-more',
+    defaultMessage: 'Show more',
+    description: 'Label for the button that can expand a list of limited items to reveal all items.',
+  },
+  showLess: {
+    id: 'aspects.button.show-less',
+    defaultMessage: 'Show less',
+    description: 'Label for the button that can hide items in a list and show limited items.',
+  },
 });
 
 export default messages;
