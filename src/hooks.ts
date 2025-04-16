@@ -56,12 +56,12 @@ export const useDashboardConfig = (usageKey: string) => {
     if (!usageKey) { return; }
     (async () => {
       setLoading(true);
+      setError('');
       try {
         const { data } = await getAuthenticatedHttpClient()
           .get(dashboardUrl(usageKey));
         setConfig(data);
         setLoading(false);
-        setError('');
       } catch (e) {
         setLoading(false);
         setConfig(null);
