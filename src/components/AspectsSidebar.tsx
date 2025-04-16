@@ -27,7 +27,7 @@ const CourseContentList = ({
   const intl = useIntl();
   const [showCount, setShowCount] = React.useState<number>(5);
 
-  return (contentList?.length) && (
+  return (!!contentList?.length) && (
     <div className="d-flex flex-column rounded-bottom py-4 px-3 bg-white border-top border-light">
       <h4 className="h4 mb-4">{title}</h4>
       {contentList?.slice(0, showCount).map(block => (
@@ -127,16 +127,15 @@ const Dashboard = ({ usageKey }: { usageKey: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardConfig, courseId]);
 
-  return (
-    <>
-      {loading && !error && <Skeleton />}
+  return (loading && !error)
+    ? <Skeleton />
+    : (
       <div
         ref={containerDiv}
         className="aspects-sidebar-embed-container d-flex w-100"
         style={{ minHeight: containerHeight }}
       />
-    </>
-  );
+    );
 };
 
 interface AspectsSidebarProps {
