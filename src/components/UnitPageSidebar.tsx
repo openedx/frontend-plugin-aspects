@@ -14,17 +14,20 @@ interface Props {
 export function UnitPageSidebar({
   blockId, unitTitle, verticalBlocks,
 }: Props) {
-  const problemBlocks = React.useMemo(() => verticalBlocks.filter(block => block.blockType === 'problem'), [verticalBlocks]);
-  const videoBlocks = React.useMemo(() => verticalBlocks.filter(block => block.blockType === 'video'), [verticalBlocks]);
   const { sendMessageToIframe } = useIframe();
+  const contentList = {
+    title: '',
+    blocks: React.useMemo(() => (
+      verticalBlocks.filter(block => (block.blockType === 'problem') || (block.blockType === 'video'))
+    ), [verticalBlocks]),
+  };
 
   return (
     <AspectsSidebar
       title={unitTitle}
       blockType={BlockTypes.vertical}
       dashboardId={blockId}
-      problemBlocks={problemBlocks}
-      videoBlocks={videoBlocks}
+      contentLists={[contentList]}
       blockActivatedCallback={(block: Block) => sendMessageToIframe('scrollToXBlock', { locator: block.id })}
     />
   );
