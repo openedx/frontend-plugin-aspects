@@ -22,7 +22,6 @@ export function UnitPageSidebar({
     <AspectsSidebar
       title={unitTitle}
       blockType={BlockTypes.vertical}
-      hasDashboard={false}
       dashboardId={blockId}
       problemBlocks={problemBlocks}
       videoBlocks={videoBlocks}

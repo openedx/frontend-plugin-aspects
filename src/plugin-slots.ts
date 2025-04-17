@@ -3,6 +3,8 @@ import { AspectsSidebarProvider } from './components/AspectsSidebarContext';
 import { CourseHeaderButton } from './components/CourseHeaderButton';
 import { SidebarToggleWrapper } from './components/SidebarToggleWrapper';
 import { UnitActionsButton } from './components/UnitActionsButton';
+import { CourseOutlineSidebar } from './components/CourseOutlineSidebar';
+import { UnitPageSidebar } from './components/UnitPageSidebar';
 
 export const pluginSlots = {
   course_outline_sidebar: {
@@ -14,7 +16,7 @@ export const pluginSlots = {
           id: 'outline-sidebar',
           priority: 1,
           type: DIRECT_PLUGIN,
-          RenderWidget: AspectsSidebar,
+          RenderWidget: CourseOutlineSidebar,
         },
       },
       {
@@ -33,7 +35,7 @@ export const pluginSlots = {
           id: 'course-unit-sidebar',
           priority: 1,
           type: DIRECT_PLUGIN,
-          RenderWidget: AspectsSidebar,
+          RenderWidget: UnitPageSidebar,
         },
       },
       {

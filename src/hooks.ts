@@ -1,4 +1,4 @@
-import { getConfig, camelCaseObject } from '@edx/frontend-platform';
+import { camelCaseObject, getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -53,7 +53,9 @@ export const useDashboardConfig = (usageKey: string) => {
   const [error, setError] = React.useState<string>('');
 
   React.useEffect(() => {
-    if (!usageKey) { return; }
+    if (!usageKey) {
+      return;
+    }
     (async () => {
       setLoading(true);
       setError('');
@@ -82,13 +84,14 @@ const getCourseBlocksUrl = (courseId: string) => {
   return url.toString();
 };
 
-export const useCourseBlocks = (courseId: UsageId) => {
+export const useCourseBlocks = (courseId?: UsageId) => {
   const { data, error } = useQuery({
     queryKey: ['course-blocks', courseId],
-    queryFn: async () => getAuthenticatedHttpClient().get(getCourseBlocksUrl(courseId)),
+    queryFn: async () => (
+      courseId ? getAuthenticatedHttpClient().get(getCourseBlocksUrl(courseId)) : Promise.resolve(null)
+    ),
     enabled: !!courseId,
-    initialData: { videos: null, problems: null },
-    select: (response: { data:BlockResponse }) => {
+    select: (response: { data: BlockResponse }) => {
       const videos: Block[] = [];
       const problems: Block[] = [];
       Object.values(response.data.blocks).forEach((block) => {
@@ -103,4 +106,17 @@ export const useCourseBlocks = (courseId: UsageId) => {
     },
   });
   return { data, error };
+};
+
+export const useChildBlockCounts = (usageKey: string) : { data: BlockResponse | undefined, error: Error | null } => {
+  const url = new URL(`${getConfig().LMS_BASE_URL}/api/courses/v1/blocks/${usageKey}`);
+  url.searchParams.append('all_blocks', 'true');
+  url.searchParams.append('block_types_filter', 'problem,video');
+  url.searchParams.append('depth', '1');
+
+  return useQuery({
+    queryKey: ['blocks', usageKey],
+    queryFn: async () => getAuthenticatedHttpClient().get(url.toString()),
+    select: (response: { data: BlockResponse }) => (response.data),
+  });
 };
