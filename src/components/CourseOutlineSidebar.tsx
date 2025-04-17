@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { Block, useCourseBlocks } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
 import { AspectsSidebarContext } from './AspectsSidebarContext';
+import messages from '../messages';
 
 interface ChildInfo {
   children: Block[]
@@ -31,6 +33,7 @@ function* getGradedSubsections(sections: Section[]) {
 }
 
 export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) {
+  const intl = useIntl();
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
   const { data } = useCourseBlocks(courseId);
   let problems = data?.problems;
@@ -40,15 +43,34 @@ export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) 
     problems = problems?.filter(block => filteredBlocks.includes(block.id));
     videos = videos?.filter(block => filteredBlocks.includes(block.id));
   }
+  const contentLists: { title: string, blocks: Block[] }[] = [];
+
+  // graded subsections are shown only when unit-filtering is off
+  if (!filteredBlocks.length && gradedSubsections?.length) {
+    contentLists.push({
+      title: intl.formatMessage(messages.gradedSubsectionAnalytics),
+      blocks: gradedSubsections,
+    });
+  }
+  if (problems?.length) {
+    contentLists.push({
+      title: intl.formatMessage(messages.problemAnalytics),
+      blocks: problems,
+    });
+  }
+  if (videos?.length) {
+    contentLists.push({
+      title: intl.formatMessage(messages.videoAnalytics),
+      blocks: videos,
+    });
+  }
 
   return (
     <AspectsSidebar
       title={courseName}
       blockType={BlockTypes.course}
       dashboardId={courseId}
-      subsections={gradedSubsections}
-      problemBlocks={problems || null}
-      videoBlocks={videos || null}
+      contentLists={contentLists}
     />
   );
 }

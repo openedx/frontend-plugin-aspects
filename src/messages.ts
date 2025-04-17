@@ -44,7 +44,17 @@ const messages = defineMessages({
   viewLarger: {
     id: 'aspects.button.view-larger',
     defaultMessage: 'View larger',
-    description: 'Label for the button under the Dashbord that opens the charts in a Modal.',
+    description: 'Label for the button under the Dashboard that opens the charts in a Modal.',
+  },
+  noAnalyticsForCourse: {
+    id: 'aspects.message.no-analytics-for-course',
+    defaultMessage: 'No analytics available for course!',
+    description: 'Message to show when there is not analytics available for a course.',
+  },
+  noAnalyticsForUnit: {
+    id: 'aspects.message.no-analytics-for-unit',
+    defaultMessage: 'No analytics available for unit!',
+    description: 'Message to show when there is analytics available for a unit.',
   },
 });
 
