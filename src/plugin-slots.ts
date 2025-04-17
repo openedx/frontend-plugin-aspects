@@ -1,5 +1,4 @@
 import { DIRECT_PLUGIN, PLUGIN_OPERATIONS } from '@openedx/frontend-plugin-framework';
-import { AspectsSidebar } from './components/AspectsSidebar';
 import { AspectsSidebarProvider } from './components/AspectsSidebarContext';
 import { CourseHeaderButton } from './components/CourseHeaderButton';
 import { SidebarToggleWrapper } from './components/SidebarToggleWrapper';

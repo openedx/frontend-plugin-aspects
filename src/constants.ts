@@ -15,7 +15,7 @@ export enum BlockTypes {
   video = 'video',
 }
 
-export const ICON_MAP: Record<BlockTypes, React.ReactNode> = {
+export const ICON_MAP: Record<BlockTypes, React.FC> = {
   [BlockTypes.course]: SchoolOutline,
   [BlockTypes.sequential]: ViewAgenda,
   [BlockTypes.vertical]: ChromeReaderMode,

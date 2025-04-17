@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import messages from '../messages';
 import { AspectsSidebarContext, SidebarContext } from './AspectsSidebarContext';
 
-export const CourseHeaderButton = ({ unitTitle = null }: { unitTitle: string | null }) => {
+export function CourseHeaderButton({ unitTitle = null }: { unitTitle: string | null }) {
   const intl = useIntl();
   const { blockId } = useParams();
   const {
@@ -28,4 +28,4 @@ export const CourseHeaderButton = ({ unitTitle = null }: { unitTitle: string | n
       {intl.formatMessage(messages.analyticsLabel)}
     </Button>
   );
-};
+}
