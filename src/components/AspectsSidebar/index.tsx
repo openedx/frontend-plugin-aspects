@@ -3,7 +3,9 @@ import * as React from 'react';
 import {
   Alert, Icon, IconButton, IconButtonWithTooltip, Stack, Sticky,
 } from '@openedx/paragon';
-import { ArrowBack, AutoGraph, Close } from '@openedx/paragon/icons';
+import {
+  ArrowBack, AutoGraph, Close, Warning,
+} from '@openedx/paragon/icons';
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { Block } from '../../hooks';
 import { AspectsSidebarContext } from '../AspectsSidebarContext';
@@ -11,13 +13,16 @@ import messages from '../../messages';
 import { CourseContentList } from './CourseContentList';
 import { Dashboard } from './Dashboard';
 
+type ContentList = {
+  title: string;
+  blocks: Block[];
+};
+
 interface AspectsSidebarProps {
   title: string;
   blockType: BlockTypes;
   dashboardId: string;
-  subsections?: Block[] | null;
-  problemBlocks: Block[] | null;
-  videoBlocks: Block[] | null;
+  contentLists: ContentList[];
   blockActivatedCallback?: (block: Block) => void;
 }
 
@@ -25,14 +30,12 @@ export function AspectsSidebar({
   title,
   blockType,
   dashboardId,
-  subsections,
-  problemBlocks,
-  videoBlocks,
+  contentLists,
   blockActivatedCallback,
 }: AspectsSidebarProps) {
   const intl = useIntl();
   const {
-    sidebarOpen, setSidebarOpen, filteredBlocks, setFilteredBlocks, activeBlock, setActiveBlock,
+    sidebarOpen, setSidebarOpen, setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit,
   } = React.useContext(AspectsSidebarContext);
 
@@ -50,6 +53,7 @@ export function AspectsSidebar({
   );
   const topTitle = activeBlock?.name || activeBlock?.displayName || title;
   const activeBlockType = activeBlock?.type || activeBlock?.category || activeBlock?.blockType || blockType;
+  const contentListSize: number = contentLists.reduce((acc, list) => acc + list.blocks.length, 0);
 
   const activateDashboard = (block: Block) => {
     setActiveBlock(block);
@@ -127,36 +131,26 @@ export function AspectsSidebar({
           { !hideDashboard && (
             <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
           )}
-          {
-            (activeBlockType === 'course' && !filteredBlocks.length) && (
+          {((activeBlockType === 'course') || (activeBlockType === 'vertical'))
+            && contentLists.map(({ title: listTitle, blocks }) => (
               <CourseContentList
-                title={intl.formatMessage(messages.gradedSubsectionAnalytics)}
-                contentList={subsections}
-                icon={ICON_MAP[BlockTypes.sequential]}
+                key={listTitle}
+                title={listTitle}
+                blocks={blocks}
                 activateDashboard={activateDashboard}
               />
-            )
-          }
-          {
-            ((activeBlockType === 'course') || (activeBlockType === 'vertical')) && (
-              <>
-                <CourseContentList
-                  title={intl.formatMessage(messages.problemAnalytics)}
-                  contentList={problemBlocks}
-                  icon={ICON_MAP[BlockTypes.problem]}
-                  activateDashboard={activateDashboard}
-                />
-                <CourseContentList
-                  title={intl.formatMessage(messages.videoAnalytics)}
-                  contentList={videoBlocks}
-                  icon={ICON_MAP[BlockTypes.video]}
-                  activateDashboard={activateDashboard}
-                />
-              </>
-            )
-          }
-          {(hideDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
-            && <Alert variant="danger" className="mb-0">No analytics available!</Alert>}
+            ))}
+
+          {(hideDashboard && !contentListSize)
+            && (
+            <Alert icon={Warning} variant="warning" className="mb-0">
+              {
+                blockType === 'course'
+                  ? intl.formatMessage(messages.noAnalyticsForCourse)
+                  : intl.formatMessage(messages.noAnalyticsForUnit)
+              }
+            </Alert>
+            )}
         </div>
       </Sticky>
     </div>
