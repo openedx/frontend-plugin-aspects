@@ -1,11 +1,17 @@
 import * as React from 'react';
 import { useParams } from 'react-router-dom';
 import { embedDashboard, EmbeddedDashboard, Size } from '@superset-ui/embedded-sdk';
-import { Alert, Skeleton } from '@openedx/paragon';
+import {
+  Alert, Button, ModalDialog, Skeleton, useToggle,
+} from '@openedx/paragon';
+import { Fullscreen } from '@openedx/paragon/icons';
+import { useIntl } from '@edx/frontend-platform/i18n';
+
 import { fetchGuestTokenFromBackend, useDashboardConfig } from '../../hooks';
 import '../../styles.css';
+import messages from '../../messages';
 
-export function Dashboard({ usageKey }: { usageKey: string }) {
+function Embed({ usageKey }: { usageKey: string }) {
   const { loading, error: configError, config: dashboardConfig } = useDashboardConfig(usageKey);
   const containerDiv = React.useRef(null);
   const { courseId } = useParams();
@@ -93,5 +99,41 @@ export function Dashboard({ usageKey }: { usageKey: string }) {
       className="aspects-sidebar-embed-container d-flex w-100"
       style={{ minHeight: containerHeight }}
     />
+  );
+}
+
+export function Dashboard({ usageKey, title }: { usageKey: string, title: string }) {
+  const [isModalOpen, openModal, closeModal] = useToggle();
+  const intl = useIntl();
+  return (
+    <>
+      <Embed usageKey={usageKey} />
+      <div className="px-3">
+        <Button
+          size="sm"
+          variant="link"
+          className="justify-content-end"
+          iconAfter={Fullscreen}
+          onClick={openModal}
+          block
+        >
+          {intl.formatMessage(messages.viewLarger)}
+        </Button>
+      </div>
+      <ModalDialog
+        title={title}
+        onClose={closeModal}
+        isOpen={isModalOpen}
+        size="xl"
+        hasCloseButton
+      >
+        <ModalDialog.Header>
+          <ModalDialog.Title>{title}</ModalDialog.Title>
+        </ModalDialog.Header>
+        <ModalDialog.Body>
+          <Embed usageKey={usageKey} />
+        </ModalDialog.Body>
+      </ModalDialog>
+    </>
   );
 }

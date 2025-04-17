@@ -1,12 +1,9 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import * as React from 'react';
 import {
-  Alert, Button, Icon, IconButton, IconButtonWithTooltip, ModalDialog, Stack, Sticky,
-  useToggle,
+  Alert, Icon, IconButton, IconButtonWithTooltip, Stack, Sticky,
 } from '@openedx/paragon';
-import {
-  ArrowBack, AutoGraph, Close, Fullscreen,
-} from '@openedx/paragon/icons';
+import { ArrowBack, AutoGraph, Close } from '@openedx/paragon/icons';
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { Block } from '../../hooks';
 import { AspectsSidebarContext } from '../AspectsSidebarContext';
@@ -38,7 +35,6 @@ export function AspectsSidebar({
     sidebarOpen, setSidebarOpen, filteredBlocks, setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit,
   } = React.useContext(AspectsSidebarContext);
-  const [isModalOpen, openModal, closeModal] = useToggle();
 
   // The activeBlock is not reset during page navigations, leading to
   // stale dashboards. This useEffect ensures it is reset.
@@ -129,35 +125,7 @@ export function AspectsSidebar({
             </h3>
           </Stack>
           { !hideDashboard && (
-            <>
-              <Dashboard usageKey={activeBlock?.id || dashboardId} />
-              <div className="px-3">
-                <Button
-                  size="sm"
-                  variant="link"
-                  className="justify-content-end"
-                  iconAfter={Fullscreen}
-                  onClick={openModal}
-                  block
-                >
-                  {intl.formatMessage(messages.viewLarger)}
-                </Button>
-              </div>
-              <ModalDialog
-                title={topTitle}
-                onClose={closeModal}
-                isOpen={isModalOpen}
-                size="xl"
-                hasCloseButton
-              >
-                <ModalDialog.Header>
-                  <ModalDialog.Title>{topTitle}</ModalDialog.Title>
-                </ModalDialog.Header>
-                <ModalDialog.Body>
-                  <Dashboard usageKey={activeBlock?.id || dashboardId} />
-                </ModalDialog.Body>
-              </ModalDialog>
-            </>
+            <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
           )}
           {
             (activeBlockType === 'course' && !filteredBlocks.length) && (
