@@ -17,6 +17,7 @@ export function UnitActionsButton({
     setActiveBlock,
     filterUnit,
     setFilterUnit,
+    activeBlock,
   } = React.useContext<SidebarContext>(AspectsSidebarContext);
   const { data, error } = useChildBlockCounts(unit?.id);
 
@@ -26,7 +27,12 @@ export function UnitActionsButton({
 
   return (
     <IconButton
-      isActive={sidebarOpen && (filterUnit?.id === unit.id)}
+      isActive={
+        sidebarOpen && (
+          (filterUnit?.id === unit.id)
+          || (!!activeBlock && (activeBlock?.id in data.blocks))
+        )
+      }
       alt={intl.formatMessage(messages.analyticsLabel)}
       src={AutoGraph}
       iconAs={Icon}
