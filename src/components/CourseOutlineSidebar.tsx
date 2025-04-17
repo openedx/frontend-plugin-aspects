@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Block, useCourseBlocks } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
+import { AspectsSidebarContext } from './AspectsSidebarContext';
 
 interface ChildInfo {
   children: Block[]
@@ -32,16 +33,22 @@ function* getGradedSubsections(sections: Section[]) {
 export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) {
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
   const { data } = useCourseBlocks(courseId);
+  let problems = data?.problems;
+  let videos = data?.videos;
+  const { filteredBlocks } = React.useContext(AspectsSidebarContext);
+  if (filteredBlocks.length) {
+    problems = problems?.filter(block => filteredBlocks.includes(block.id));
+    videos = videos?.filter(block => filteredBlocks.includes(block.id));
+  }
 
   return (
     <AspectsSidebar
       title={courseName}
       blockType={BlockTypes.course}
-      hasDashboard
       dashboardId={courseId}
       subsections={gradedSubsections}
-      problemBlocks={data.problems}
-      videoBlocks={data.videos}
+      problemBlocks={problems || null}
+      videoBlocks={videos || null}
     />
   );
 }

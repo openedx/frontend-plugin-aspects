@@ -1,38 +1,38 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
+import { Block } from '../hooks';
 
 export type SidebarContext = {
   sidebarOpen: boolean,
   setSidebarOpen: (value: boolean) => void,
-  location: string,
-  setLocation: (value: string) => void,
-  sidebarTitle: string,
-  setSidebarTitle: (value: string) => void,
+  activeBlock: Block | null,
+  setActiveBlock: (block: Block | null) => void,
+  filteredBlocks: string[],
+  setFilteredBlocks: (blocks: string[]) => void,
+  filterUnit: Block | null,
+  setFilterUnit: (block: Block | null) => void,
 };
 
-export const AspectsSidebarContext = React.createContext<SidebarContext>({
-  sidebarOpen: false,
-  location: null,
-  sidebarTitle: null,
-  setSidebarOpen: (value: boolean) => {},
-  setLocation: (value: string) => {},
-  setSidebarTitle: (value: string) => {},
-});
+export const AspectsSidebarContext = React.createContext<SidebarContext>({} as SidebarContext);
 
 export function AspectsSidebarProvider({ component }: { component: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(false);
-  const [sidebarTitle, setSidebarTitle] = React.useState<string | null>(null);
-  const [location, setLocation] = React.useState<string | null>(null);
+  const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
+  const [filteredBlocks, setFilteredBlocks] = React.useState<string[]>([]);
+  const [filterUnit, setFilterUnit] = React.useState<Block | null>(null);
+
   return (
     <AspectsSidebarContext.Provider
-      value={{
+      value={React.useMemo(() => ({
         sidebarOpen,
-        sidebarTitle,
-        setSidebarTitle,
-        location,
+        activeBlock,
         setSidebarOpen,
-        setLocation,
-      }}
+        setActiveBlock,
+        filteredBlocks,
+        setFilteredBlocks,
+        filterUnit,
+        setFilterUnit,
+      }), [sidebarOpen, activeBlock, filteredBlocks, filterUnit])}
     >
       {component}
     </AspectsSidebarContext.Provider>
