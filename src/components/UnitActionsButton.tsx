@@ -10,10 +10,10 @@ interface UnitActionsButtonProps {
   subsection: { id: string, displayName: string, graded: boolean },
 }
 
-export const UnitActionsButton = ({
+export function UnitActionsButton({
   unit,
   subsection,
-}: UnitActionsButtonProps) => {
+}: UnitActionsButtonProps) {
   const intl = useIntl();
   const {
     sidebarOpen,
@@ -47,4 +47,4 @@ export const UnitActionsButton = ({
       }}
     />
   );
-};
+}

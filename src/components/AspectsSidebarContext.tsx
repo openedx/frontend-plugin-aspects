@@ -19,7 +19,7 @@ export const AspectsSidebarContext = React.createContext<SidebarContext>({
   setSidebarTitle: (value: string) => {},
 });
 
-export const AspectsSidebarProvider = ({ component }: { component: ReactNode }) => {
+export function AspectsSidebarProvider({ component }: { component: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(false);
   const [sidebarTitle, setSidebarTitle] = React.useState<string | null>(null);
   const [location, setLocation] = React.useState<string | null>(null);
@@ -37,4 +37,4 @@ export const AspectsSidebarProvider = ({ component }: { component: ReactNode }) 
       {component}
     </AspectsSidebarContext.Provider>
   );
-};
+}

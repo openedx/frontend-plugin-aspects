@@ -1,8 +1,9 @@
 import * as React from 'react';
+// @ts-ignore
 import { useIframe } from 'CourseAuthoring/generic/hooks/context/hooks';
-import { AspectsSidebar } from './AspectsSidebar';
 import { Block } from '../hooks';
 import { BlockTypes } from '../constants';
+import { AspectsSidebar } from './AspectsSidebar';
 
 interface Props {
   blockId: string;
@@ -10,9 +11,9 @@ interface Props {
   verticalBlocks: Block[];
 }
 
-export const UnitPageSidebar = ({
+export function UnitPageSidebar({
   blockId, unitTitle, verticalBlocks,
-}: Props) => {
+}: Props) {
   const problemBlocks = React.useMemo(() => verticalBlocks.filter(block => block.blockType === 'problem'), [verticalBlocks]);
   const videoBlocks = React.useMemo(() => verticalBlocks.filter(block => block.blockType === 'video'), [verticalBlocks]);
   const { sendMessageToIframe } = useIframe();
@@ -28,4 +29,4 @@ export const UnitPageSidebar = ({
       blockActivatedCallback={(block: Block) => sendMessageToIframe('scrollToXBlock', { locator: block.id })}
     />
   );
-};
+}

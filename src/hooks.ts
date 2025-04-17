@@ -82,14 +82,15 @@ const getCourseBlocksUrl = (courseId: string) => {
   return url.toString();
 };
 
-export const useCourseBlocks = (courseId?: UsageId) => {
+export const useCourseBlocks = (courseId: UsageId) => {
   const { data, error } = useQuery({
     queryKey: ['course-blocks', courseId],
     queryFn: async () => getAuthenticatedHttpClient().get(getCourseBlocksUrl(courseId)),
     enabled: !!courseId,
+    initialData: { videos: null, problems: null },
     select: (response: { data:BlockResponse }) => {
-      const videos = [];
-      const problems = [];
+      const videos: Block[] = [];
+      const problems: Block[] = [];
       Object.values(response.data.blocks).forEach((block) => {
         if (block.type === 'video') {
           videos.push(camelCaseObject(block));
@@ -98,10 +99,7 @@ export const useCourseBlocks = (courseId?: UsageId) => {
           problems.push(camelCaseObject(block));
         }
       });
-      return ({
-        videos,
-        problems,
-      });
+      return ({ videos, problems });
     },
   });
   return { data, error };
