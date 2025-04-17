@@ -9,8 +9,8 @@ export function Dashboard({ usageKey }: { usageKey: string }) {
   const { loading, error: configError, config: dashboardConfig } = useDashboardConfig(usageKey);
   const containerDiv = React.useRef(null);
   const { courseId } = useParams();
-  const [containerHeight, setContainerHeight] = React.useState<number>(30);
-  const [iframeError, setIframeError] = React.useState<unknown | null>(null);
+  const [containerHeight, setContainerHeight] = React.useState<number>(0);
+  const [count, setCount] = React.useState(0);
 
   React.useEffect(() => {
     // Hide the dashboard when navigating
@@ -29,14 +29,15 @@ export function Dashboard({ usageKey }: { usageKey: string }) {
        * the value stale and the charts get hidden.
        *
        * The updateHeight method gets around this by using `setTimeout` to poll for
-       * the height. The polling is stopped when the height stops changing.
+       * the height for 10 seconds or longer if the height keeps changing.
        */
       const updateHeight = async () => {
         if (iframe) {
           const size: Size = await iframe.getScrollSize();
-          if (size.height !== containerHeight) {
+          if ((count < 20) || (size.height !== containerHeight)) {
             setContainerHeight(size.height);
-            setTimeout(updateHeight, 1000);
+            setTimeout(updateHeight, 500);
+            setCount(count + 1);
           }
         }
       };
@@ -64,7 +65,7 @@ export function Dashboard({ usageKey }: { usageKey: string }) {
           },
         });
       } catch (e) {
-        setIframeError(e);
+        return;
       }
       if (iframe) {
         await updateHeight();
@@ -78,8 +79,12 @@ export function Dashboard({ usageKey }: { usageKey: string }) {
     return <Skeleton />;
   }
 
-  if (configError || iframeError) {
-    return <Alert variant="error" message={configError || iframeError} />;
+  if (configError) {
+    return (
+      <Alert variant="danger">
+        {configError}
+      </Alert>
+    );
   }
 
   return (

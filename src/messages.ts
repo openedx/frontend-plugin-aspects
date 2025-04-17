@@ -41,6 +41,11 @@ const messages = defineMessages({
     defaultMessage: 'Show less',
     description: 'Label for the button that can hide items in a list and show limited items.',
   },
+  viewLarger: {
+    id: 'aspects.button.view-larger',
+    defaultMessage: 'View larger',
+    description: 'Label for the button under the Dashbord that opens the charts in a Modal.',
+  },
 });
 
 export default messages;

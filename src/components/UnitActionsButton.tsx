@@ -4,45 +4,43 @@ import { AutoGraph } from '@openedx/paragon/icons';
 import * as React from 'react';
 import messages from '../messages';
 import { AspectsSidebarContext, SidebarContext } from './AspectsSidebarContext';
-
-interface UnitActionsButtonProps {
-  unit: { id: string, displayName: string } | undefined,
-  subsection: { id: string, displayName: string, graded: boolean },
-}
+import { useChildBlockCounts, Block } from '../hooks';
 
 export function UnitActionsButton({
   unit,
-  subsection,
-}: UnitActionsButtonProps) {
+}: { unit: Block }) {
   const intl = useIntl();
   const {
     sidebarOpen,
-    location,
     setSidebarOpen,
-    setSidebarTitle,
-    setLocation,
+    setFilteredBlocks,
+    setActiveBlock,
+    filterUnit,
+    setFilterUnit,
   } = React.useContext<SidebarContext>(AspectsSidebarContext);
+  const { data, error } = useChildBlockCounts(unit?.id);
 
-  const buttonLocation = unit
-    ? unit.id
-    : subsection.id;
-  const title = unit
-    ? unit.displayName
-    : subsection.displayName;
-  return subsection?.graded && (
+  if (error || !data || (data?.blocks && (Object.keys(data?.blocks).length === 0))) {
+    return null;
+  }
+
+  return (
     <IconButton
-      isActive={sidebarOpen && location === buttonLocation}
+      isActive={sidebarOpen && (filterUnit?.id === unit.id)}
       alt={intl.formatMessage(messages.analyticsLabel)}
       src={AutoGraph}
       iconAs={Icon}
       variant="black"
       onClick={() => {
-        if (location === buttonLocation) {
-          setSidebarOpen(false);
+        setSidebarOpen(true);
+        if (filterUnit?.id === unit.id) {
+          setActiveBlock(null);
+          setFilteredBlocks([]);
+          setFilterUnit(null);
         } else {
-          setLocation(buttonLocation);
-          setSidebarOpen(true);
-          setSidebarTitle(title);
+          setActiveBlock(unit);
+          setFilteredBlocks(Object.keys(data.blocks));
+          setFilterUnit(unit);
         }
       }}
     />

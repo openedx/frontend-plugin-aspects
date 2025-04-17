@@ -1,9 +1,12 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import * as React from 'react';
 import {
-  Alert, Icon, IconButton, IconButtonWithTooltip, Stack, Sticky,
+  Alert, Button, Icon, IconButton, IconButtonWithTooltip, ModalDialog, Stack, Sticky,
+  useToggle,
 } from '@openedx/paragon';
-import { ArrowBack, AutoGraph, Close } from '@openedx/paragon/icons';
+import {
+  ArrowBack, AutoGraph, Close, Fullscreen,
+} from '@openedx/paragon/icons';
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { Block } from '../../hooks';
 import { AspectsSidebarContext } from '../AspectsSidebarContext';
@@ -14,9 +17,6 @@ import { Dashboard } from './Dashboard';
 interface AspectsSidebarProps {
   title: string;
   blockType: BlockTypes;
-  // The Unit page level metrics are currently not implemented.
-  // This property is used to track it, so we can correctly show "No metrics" alert.
-  hasDashboard: boolean;
   dashboardId: string;
   subsections?: Block[] | null;
   problemBlocks: Block[] | null;
@@ -27,7 +27,6 @@ interface AspectsSidebarProps {
 export function AspectsSidebar({
   title,
   blockType,
-  hasDashboard,
   dashboardId,
   subsections,
   problemBlocks,
@@ -35,31 +34,49 @@ export function AspectsSidebar({
   blockActivatedCallback,
 }: AspectsSidebarProps) {
   const intl = useIntl();
-  const { sidebarOpen, setSidebarOpen } = React.useContext(AspectsSidebarContext);
-  const [activeDashboard, setActiveDashboard] = React.useState<string>(dashboardId);
-  const [activeTitle, setActiveTitle] = React.useState<string>(title);
-  const [activeBlockType, setActiveBlockType] = React.useState<BlockTypes>(blockType);
+  const {
+    sidebarOpen, setSidebarOpen, filteredBlocks, setFilteredBlocks, activeBlock, setActiveBlock,
+    filterUnit, setFilterUnit,
+  } = React.useContext(AspectsSidebarContext);
+  const [isModalOpen, openModal, closeModal] = useToggle();
+
+  // The activeBlock is not reset during page navigations, leading to
+  // stale dashboards. This useEffect ensures it is reset.
+  React.useEffect(() => setActiveBlock(null), [setActiveBlock]);
+
+  if (!sidebarOpen) {
+    return null;
+  }
+
+  const hideDashboard: boolean = (
+    (!!activeBlock && (activeBlock.category === 'vertical'))
+    || (!activeBlock && (blockType === 'vertical'))
+  );
+  const topTitle = activeBlock?.name || activeBlock?.displayName || title;
+  const activeBlockType = activeBlock?.type || activeBlock?.category || activeBlock?.blockType || blockType;
 
   const activateDashboard = (block: Block) => {
-    setActiveDashboard(block.id);
-    setActiveTitle(block.name || block.displayName);
-    const currentBlockType = block.category || block.type || block.blockType;
-    setActiveBlockType(BlockTypes[currentBlockType]);
-    // call the callback only in unit-page
-    if (blockType === BlockTypes.vertical && !!blockActivatedCallback) {
+    setActiveBlock(block);
+    if (activeBlockType === BlockTypes.vertical && !!blockActivatedCallback) {
       blockActivatedCallback(block);
     }
   };
   // reset all the active values to props
   const goBack = () => {
-    setActiveDashboard(dashboardId);
-    setActiveTitle(title);
-    setActiveBlockType(blockType);
+    // Currently viewing component dashboard of a filtered view of a specific unit
+    // Go back to the filtered view of the unit
+    if (filterUnit && (activeBlock?.id !== filterUnit.id)) {
+      setActiveBlock(filterUnit);
+    } else if (filterUnit?.id === activeBlock?.id) {
+      // Viewing the filtered view of a unit - go back to full course view
+      setActiveBlock(null);
+      setFilterUnit(null);
+      setFilteredBlocks([]);
+    } else {
+      // reset to default view for all other cases
+      setActiveBlock(null);
+    }
   };
-
-  if (!sidebarOpen) {
-    return null;
-  }
 
   return (
     <div className="w-100 h-100">
@@ -92,7 +109,7 @@ export function AspectsSidebar({
               />
             </Stack>
             <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center">
-              {title !== activeTitle && (
+              {(activeBlock) && (
                 <IconButton
                   className="mr-2"
                   alt={intl.formatMessage(messages.backButtonLabel)}
@@ -108,12 +125,42 @@ export function AspectsSidebar({
                 className="d-inline-block mr-2 text-gray"
                 aria-hidden
               />
-              <span>{activeTitle}</span>
+              <span>{topTitle}</span>
             </h3>
           </Stack>
-          <Dashboard usageKey={activeDashboard} />
+          { !hideDashboard && (
+            <>
+              <Dashboard usageKey={activeBlock?.id || dashboardId} />
+              <div className="px-3">
+                <Button
+                  size="sm"
+                  variant="link"
+                  className="justify-content-end"
+                  iconAfter={Fullscreen}
+                  onClick={openModal}
+                  block
+                >
+                  {intl.formatMessage(messages.viewLarger)}
+                </Button>
+              </div>
+              <ModalDialog
+                title={topTitle}
+                onClose={closeModal}
+                isOpen={isModalOpen}
+                size="xl"
+                hasCloseButton
+              >
+                <ModalDialog.Header>
+                  <ModalDialog.Title>{topTitle}</ModalDialog.Title>
+                </ModalDialog.Header>
+                <ModalDialog.Body>
+                  <Dashboard usageKey={activeBlock?.id || dashboardId} />
+                </ModalDialog.Body>
+              </ModalDialog>
+            </>
+          )}
           {
-            activeBlockType === 'course' && (
+            (activeBlockType === 'course' && !filteredBlocks.length) && (
               <CourseContentList
                 title={intl.formatMessage(messages.gradedSubsectionAnalytics)}
                 contentList={subsections}
@@ -140,7 +187,7 @@ export function AspectsSidebar({
               </>
             )
           }
-          {(!hasDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
+          {(hideDashboard && !problemBlocks?.length && !videoBlocks?.length && !subsections?.length)
             && <Alert variant="danger" className="mb-0">No analytics available!</Alert>}
         </div>
       </Sticky>
