@@ -8,7 +8,7 @@ import {
 } from '@openedx/paragon/icons';
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { Block } from '../../hooks';
-import { AspectsSidebarContext } from '../AspectsSidebarContext';
+import { useAspectsSidebarContext } from '../AspectsSidebarContext';
 import messages from '../../messages';
 import { CourseContentList } from './CourseContentList';
 import { Dashboard } from './Dashboard';
@@ -37,7 +37,7 @@ export function AspectsSidebar({
   const {
     sidebarOpen, setSidebarOpen, setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit,
-  } = React.useContext(AspectsSidebarContext);
+  } = useAspectsSidebarContext();
 
   // The activeBlock is not reset during page navigations, leading to
   // stale dashboards. This useEffect ensures it is reset.
