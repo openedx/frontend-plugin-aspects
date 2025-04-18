@@ -31,6 +31,31 @@ const messages = defineMessages({
     defaultMessage: 'Problem Analytics',
     description: 'Title for card showing list of problem blocks for analytics.',
   },
+  showMore: {
+    id: 'aspects.button.show-more',
+    defaultMessage: 'Show more',
+    description: 'Label for the button that can expand a list of limited items to reveal all items.',
+  },
+  showLess: {
+    id: 'aspects.button.show-less',
+    defaultMessage: 'Show less',
+    description: 'Label for the button that can hide items in a list and show limited items.',
+  },
+  viewLarger: {
+    id: 'aspects.button.view-larger',
+    defaultMessage: 'View larger',
+    description: 'Label for the button under the Dashboard that opens the charts in a Modal.',
+  },
+  noAnalyticsForCourse: {
+    id: 'aspects.message.no-analytics-for-course',
+    defaultMessage: 'No analytics available for course!',
+    description: 'Message to show when there is not analytics available for a course.',
+  },
+  noAnalyticsForUnit: {
+    id: 'aspects.message.no-analytics-for-unit',
+    defaultMessage: 'No analytics available for unit!',
+    description: 'Message to show when there is analytics available for a unit.',
+  },
 });
 
 export default messages;
