@@ -15,7 +15,7 @@ export type SidebarContext = {
 
 export const AspectsSidebarContext = React.createContext<SidebarContext | null>(null);
 
-export function AspectsSidebarProvider({ children }: { children: ReactNode }) {
+export function AspectsSidebarProvider({ component }: { component: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(false);
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [filteredBlocks, setFilteredBlocks] = React.useState<string[]>([]);
@@ -34,7 +34,7 @@ export function AspectsSidebarProvider({ children }: { children: ReactNode }) {
         setFilterUnit,
       }}
     >
-      {children}
+      {component}
     </AspectsSidebarContext.Provider>
   );
 }
