@@ -20,19 +20,31 @@ export function AspectsSidebarProvider({ component }: { component: ReactNode }) 
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [filteredBlocks, setFilteredBlocks] = React.useState<string[]>([]);
   const [filterUnit, setFilterUnit] = React.useState<Block | null>(null);
+  const contextValue: SidebarContext = React.useMemo(() => (
+    {
+      sidebarOpen,
+      setSidebarOpen,
+      activeBlock,
+      setActiveBlock,
+      filteredBlocks,
+      setFilteredBlocks,
+      filterUnit,
+      setFilterUnit,
+    }
+  ), [
+    sidebarOpen,
+    setSidebarOpen,
+    activeBlock,
+    setActiveBlock,
+    filteredBlocks,
+    setFilteredBlocks,
+    filterUnit,
+    setFilterUnit,
+  ]);
 
   return (
     <AspectsSidebarContext.Provider
-      value={{
-        sidebarOpen,
-        activeBlock,
-        setSidebarOpen,
-        setActiveBlock,
-        filteredBlocks,
-        setFilteredBlocks,
-        filterUnit,
-        setFilterUnit,
-      }}
+      value={contextValue}
     >
       {component}
     </AspectsSidebarContext.Provider>
