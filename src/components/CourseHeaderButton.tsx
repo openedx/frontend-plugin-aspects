@@ -3,14 +3,14 @@ import { Button } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
 import * as React from 'react';
 import messages from '../messages';
-import { AspectsSidebarContext, SidebarContext } from './AspectsSidebarContext';
+import { useAspectsSidebarContext } from './AspectsSidebarContext';
 
 export function CourseHeaderButton() {
   const intl = useIntl();
   const {
     sidebarOpen,
     setSidebarOpen,
-  } = React.useContext<SidebarContext>(AspectsSidebarContext);
+  } = useAspectsSidebarContext();
   return (
     <Button
       variant={sidebarOpen ? 'primary' : 'outline-primary'}

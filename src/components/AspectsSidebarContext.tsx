@@ -13,9 +13,9 @@ export type SidebarContext = {
   setFilterUnit: (block: Block | null) => void,
 };
 
-export const AspectsSidebarContext = React.createContext<SidebarContext>({} as SidebarContext);
+export const AspectsSidebarContext = React.createContext<SidebarContext | null>(null);
 
-export function AspectsSidebarProvider({ component }: { component: ReactNode }) {
+export function AspectsSidebarProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(false);
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [filteredBlocks, setFilteredBlocks] = React.useState<string[]>([]);
@@ -23,7 +23,7 @@ export function AspectsSidebarProvider({ component }: { component: ReactNode }) 
 
   return (
     <AspectsSidebarContext.Provider
-      value={React.useMemo(() => ({
+      value={{
         sidebarOpen,
         activeBlock,
         setSidebarOpen,
@@ -32,9 +32,18 @@ export function AspectsSidebarProvider({ component }: { component: ReactNode }) 
         setFilteredBlocks,
         filterUnit,
         setFilterUnit,
-      }), [sidebarOpen, activeBlock, filteredBlocks, filterUnit])}
+      }}
     >
-      {component}
+      {children}
     </AspectsSidebarContext.Provider>
   );
 }
+
+export const useAspectsSidebarContext = (): SidebarContext => {
+  const context = React.useContext(AspectsSidebarContext);
+
+  if (!context) {
+    throw new Error('AspectsSidebarContext is not set. Make sure AspectsSidebarProvider is used before this component.');
+  }
+  return context;
+};

@@ -3,7 +3,7 @@ import { Icon, IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
 import * as React from 'react';
 import messages from '../messages';
-import { AspectsSidebarContext, SidebarContext } from './AspectsSidebarContext';
+import { useAspectsSidebarContext } from './AspectsSidebarContext';
 import { useChildBlockCounts, Block } from '../hooks';
 
 export function UnitActionsButton({
@@ -18,7 +18,7 @@ export function UnitActionsButton({
     filterUnit,
     setFilterUnit,
     activeBlock,
-  } = React.useContext<SidebarContext>(AspectsSidebarContext);
+  } = useAspectsSidebarContext();
   const { data, error } = useChildBlockCounts(unit?.id);
 
   if (error || !data || (data?.blocks && (Object.keys(data?.blocks).length === 0))) {

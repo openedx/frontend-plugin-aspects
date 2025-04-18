@@ -3,7 +3,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import { Block, useCourseBlocks } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
-import { AspectsSidebarContext } from './AspectsSidebarContext';
+import { useAspectsSidebarContext } from './AspectsSidebarContext';
 import messages from '../messages';
 
 interface ChildInfo {
@@ -34,11 +34,12 @@ function* getGradedSubsections(sections: Section[]) {
 
 export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) {
   const intl = useIntl();
-  const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
+  const { filteredBlocks } = useAspectsSidebarContext();
   const { data } = useCourseBlocks(courseId);
+
+  const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
   let problems = data?.problems;
   let videos = data?.videos;
-  const { filteredBlocks } = React.useContext(AspectsSidebarContext);
 
   if (filteredBlocks?.length) {
     problems = problems?.filter(block => filteredBlocks.includes(block.id));
