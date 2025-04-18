@@ -39,14 +39,15 @@ export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) 
   let problems = data?.problems;
   let videos = data?.videos;
   const { filteredBlocks } = React.useContext(AspectsSidebarContext);
-  if (filteredBlocks.length) {
+
+  if (filteredBlocks?.length) {
     problems = problems?.filter(block => filteredBlocks.includes(block.id));
     videos = videos?.filter(block => filteredBlocks.includes(block.id));
   }
   const contentLists: { title: string, blocks: Block[] }[] = [];
 
   // graded subsections are shown only when unit-filtering is off
-  if (!filteredBlocks.length && gradedSubsections?.length) {
+  if (!filteredBlocks?.length && gradedSubsections?.length) {
     contentLists.push({
       title: intl.formatMessage(messages.gradedSubsectionAnalytics),
       blocks: gradedSubsections,
