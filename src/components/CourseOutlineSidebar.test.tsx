@@ -1,72 +1,441 @@
 import * as React from 'react';
-import { IntlProvider } from '@edx/frontend-platform/i18n';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { CourseOutlineSidebar } from './CourseOutlineSidebar';
+import { useCourseBlocks } from '../hooks';
+import { useAspectsSidebarContext } from './AspectsSidebarContext';
+import { AspectsSidebar } from './AspectsSidebar';
+import { BlockTypes } from '../constants';
+import messages from '../messages';
+import { Section, Block } from '../types';
 import '@testing-library/jest-dom';
 
-import { CourseOutlineSidebar } from './CourseOutlineSidebar';
-import { AspectsSidebarContext } from './AspectsSidebarContext';
+// Mock the child component to check props passed to it
+jest.mock('./AspectsSidebar', () => ({
+  AspectsSidebar: jest.fn(({ title, contentLists }) => (
+    <div data-testid="mock-aspects-sidebar" data-title={title}>
+      Mock AspectsSidebar
+      {contentLists.map((list: { title: string, blocks: Block[] }) => (
+        <div key={list.title} data-testid={`content-list-${list.title.replace(/\s+/g, '-')}`}>
+          <h2>{list.title}</h2>
+          <ul>
+            {list.blocks.map((block: Block) => (
+              <li key={block.id}>{block.displayName || block.id}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  )),
+}));
 
-afterEach(cleanup);
+// Mock hooks
+jest.mock('@edx/frontend-platform/i18n', () => ({
+  defineMessages: jest.fn((messageObject) => messageObject),
+  useIntl: jest.fn(),
+}));
+jest.mock('../hooks', () => ({
+  useCourseBlocks: jest.fn(),
+}));
+jest.mock('./AspectsSidebarContext', () => ({
+  useAspectsSidebarContext: jest.fn(),
+}));
 
-// <Sticky> uses the IntersectionObserver API
-beforeEach(() => {
-  // IntersectionObserver isn't available in test environment
-  const mockIntersectionObserver = jest.fn();
-  mockIntersectionObserver.mockReturnValue({
-    observe: () => null,
-    unobserve: () => null,
-    disconnect: () => null,
-  });
-  window.IntersectionObserver = mockIntersectionObserver;
-});
+// Test Data
+const mockCourseId = 'course-v1:TestX+TST101+2025';
+const mockCourseName = 'Test Course 101';
 
-const createSidebarContext = (overrides) => ({
-  sidebarOpen: false,
-  setSidebarOpen: jest.fn(),
-  activeBlock: null,
-  setActiveBlock: jest.fn(),
-  filteredBlocks: [],
-  setFilteredBlocks: jest.fn(),
-  filterUnit: null,
-  setFilterUnit: jest.fn(),
-  ...overrides,
-});
+const mockSections: Section[] = [
+  {
+    id: 'section1',
+    category: 'chapter',
+    displayName: 'Chapter 1',
+    graded: false,
+    childInfo: {
+      category: 'sequential',
+      displayName: 'SubSection',
+      children: [
+        {
+          id: 'subsection1_1',
+          category: 'sequential',
+          displayName: 'Graded Sub 1',
+          graded: true,
+          childInfo: {
+            category: 'vertical', children: [], displayName: 'Unit',
+          },
+        },
+        {
+          id: 'subsection1_2',
+          category: 'sequential',
+          displayName: 'Non-Graded Sub 1',
+          graded: false,
+          childInfo: {
+            category: 'vertical', children: [], displayName: 'Unit',
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: 'section2',
+    category: 'chapter',
+    displayName: 'Chapter 2',
+    graded: false,
+    childInfo: {
+      category: 'sequential',
+      displayName: 'SubSection',
+      children: [
+        {
+          id: 'subsection2_1',
+          category: 'sequential',
+          displayName: 'Graded Sub 2',
+          graded: true,
+          childInfo: {
+            category: 'vertical',
+            children: [],
+            displayName: 'Unit',
+          },
+        },
+      ],
+    },
+  },
+];
 
-const queryClient = new QueryClient();
+const mockProblems: Block[] = [
+  {
+    id: 'problem1', type: BlockTypes.problem, displayName: 'Problem A',
+  },
+  {
+    id: 'problem2', type: BlockTypes.problem, displayName: 'Problem B',
+  },
+];
 
-const renderComponent = (children, props) => render(
-  <IntlProvider locale="en">
-    <QueryClientProvider client={queryClient}>
-      <AspectsSidebarContext.Provider value={createSidebarContext(props.sidebarContext)}>
-        {children}
-      </AspectsSidebarContext.Provider>
-    </QueryClientProvider>
-  </IntlProvider>,
-);
+const mockVideos: Block[] = [
+  {
+    id: 'video1', type: BlockTypes.video, displayName: 'Video X',
+  },
+  {
+    id: 'video2', type: BlockTypes.video, displayName: 'Video Y',
+  },
+];
 
+// Test Suite
 describe('CourseOutlineSidebar', () => {
-  it('renders null without crashing', () => {
-    const { container } = renderComponent(
-      <CourseOutlineSidebar
-        courseId="DemoCourse"
-        courseName="Course Name"
-        sections={[]}
-      />,
-      { sidebarContext: {} },
-    );
-    expect(container).toBeEmptyDOMElement();
+  // Mock implementations setup
+  const mockFormatMessage = jest.fn((message) => message.defaultMessage || message.id);
+  const mockUseIntl = useIntl as jest.Mock;
+  const mockUseCourseBlocks = useCourseBlocks as jest.Mock;
+  const mockUseAspectsSidebarContext = useAspectsSidebarContext as jest.Mock;
+  const MockAspectsSidebar = AspectsSidebar as jest.Mock; // Get the mock constructor
+
+  beforeEach(() => {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+
+    // Default mock implementations
+    mockUseIntl.mockReturnValue({ formatMessage: mockFormatMessage });
+    mockUseCourseBlocks.mockReturnValue({ data: null, isLoading: true }); // Default to loading state
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined }); // Default to no filtering
+    MockAspectsSidebar.mockClear(); // Clear calls specifically for the component mock
   });
 
-  it('renders course dashboard when there is not data and sidebar is open', () => {
-    const { getByText } = renderComponent(
-      <CourseOutlineSidebar
-        courseId="DemoCourse"
-        courseName="Course Name"
-        sections={[]}
-      />,
-      { sidebarContext: { sidebarOpen: true } },
+  const renderComponent = (props: Partial<React.ComponentProps<typeof CourseOutlineSidebar>> = {}) => {
+    const defaultProps = {
+      courseId: mockCourseId,
+      courseName: mockCourseName,
+      sections: mockSections,
+    };
+    return render(<CourseOutlineSidebar {...defaultProps} {...props} />);
+  };
+
+  // --- Test Cases ---
+
+  it('renders AspectsSidebar with basic props', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: null }); // No data yet
+    renderComponent();
+
+    expect(MockAspectsSidebar).toHaveBeenCalledTimes(1);
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: mockCourseName,
+        blockType: BlockTypes.course,
+        dashboardId: mockCourseId,
+        contentLists: expect.any(Array), // Check contentLists in more detail below
+      }),
+      {}, // Second argument for context (usually empty for functional components)
     );
-    expect(getByText('Analytics')).toBeInTheDocument();
+  });
+
+  it('displays graded subsections when available and no filtering is active', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } }); // No problems/videos
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] }); // No filtering
+    renderComponent({ sections: mockSections });
+
+    expect(mockFormatMessage).toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
+    const expectedGradedTitle = messages.gradedSubsectionAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Test Course 101',
+        blockType: 'course',
+        dashboardId: 'course-v1:TestX+TST101+2025',
+        contentLists: [
+          {
+            title: expectedGradedTitle,
+            blocks: [
+              {
+                id: 'subsection1_1',
+                type: 'sequential',
+                displayName: 'Graded Sub 1',
+                graded: true,
+                childInfo: {
+                  category: 'vertical', children: [], displayName: 'Unit',
+                },
+              },
+              {
+                id: 'subsection2_1',
+                type: 'sequential',
+                displayName: 'Graded Sub 2',
+                graded: true,
+                childInfo: {
+                  category: 'vertical', children: [], displayName: 'Unit',
+                },
+              },
+            ],
+          },
+        ],
+      }),
+      {},
+    );
+
+    // Also check rendered output from mock
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const gradedList = within(sidebar).getByTestId(`content-list-${expectedGradedTitle.replace(/\s+/g, '-')}`);
+    expect(within(gradedList).getByText(expectedGradedTitle)).toBeInTheDocument();
+    expect(within(gradedList).getByText('Graded Sub 1')).toBeInTheDocument();
+    expect(within(gradedList).getByText('Graded Sub 2')).toBeInTheDocument();
+  });
+
+  it('displays problems when available', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    renderComponent({ sections: [] }); // No sections to avoid graded list
+
+    expect(mockFormatMessage).toHaveBeenCalledWith(messages.problemAnalytics);
+    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedProblemTitle,
+            blocks: mockProblems,
+          },
+        ],
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const problemList = within(sidebar).getByTestId(`content-list-${expectedProblemTitle.replace(/\s+/g, '-')}`);
+    expect(within(problemList).getByText(expectedProblemTitle)).toBeInTheDocument();
+    expect(within(problemList).getByText('Problem A')).toBeInTheDocument();
+    expect(within(problemList).getByText('Problem B')).toBeInTheDocument();
+  });
+
+  it('displays videos when available', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: mockVideos } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    renderComponent({ sections: [] }); // No sections
+
+    expect(mockFormatMessage).toHaveBeenCalledWith(messages.videoAnalytics);
+    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedVideoTitle,
+            blocks: mockVideos,
+          },
+        ],
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const videoList = within(sidebar).getByTestId(`content-list-${expectedVideoTitle.replace(/\s+/g, '-')}`);
+    expect(within(videoList).getByText(expectedVideoTitle)).toBeInTheDocument();
+    expect(within(videoList).getByText('Video X')).toBeInTheDocument();
+    expect(within(videoList).getByText('Video Y')).toBeInTheDocument();
+  });
+
+  it('displays all available content lists in order (graded, problems, videos) without filtering', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: mockVideos } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] });
+    renderComponent({ sections: mockSections });
+
+    const expectedGradedTitle = messages.gradedSubsectionAnalytics.defaultMessage;
+    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedGradedTitle,
+            blocks: expect.arrayContaining([
+              expect.objectContaining({ id: 'subsection1_1' }),
+              expect.objectContaining({ id: 'subsection2_1' }),
+            ]),
+          },
+          {
+            title: expectedProblemTitle,
+            blocks: mockProblems,
+          },
+          {
+            title: expectedVideoTitle,
+            blocks: mockVideos,
+          },
+        ],
+      }),
+      {},
+    );
+    // Check order and presence via rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const lists = within(sidebar).queryAllByRole('heading', { level: 2 });
+    expect(lists).toHaveLength(3);
+    expect(lists[0]).toHaveTextContent(expectedGradedTitle);
+    expect(lists[1]).toHaveTextContent(expectedProblemTitle);
+    expect(lists[2]).toHaveTextContent(expectedVideoTitle);
+  });
+
+  it('does NOT display graded subsections when filtering is active', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: mockVideos } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem1'] }); // Filtering active
+    renderComponent({ sections: mockSections });
+
+    const expectedGradedTitle = messages.gradedSubsectionAnalytics.defaultMessage;
+    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
+
+    // Check that graded list is NOT present
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Test Course 101',
+        blockType: 'course',
+        dashboardId: 'course-v1:TestX+TST101+2025',
+        contentLists: [
+          // Graded list should be absent
+          {
+            title: expectedProblemTitle,
+            blocks: [mockProblems[0]], // Only problem1 due to filter
+          },
+          // No videos match filter
+        ],
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    expect(within(sidebar).queryByText(expectedGradedTitle)).not.toBeInTheDocument();
+    expect(within(sidebar).getByText(expectedProblemTitle)).toBeInTheDocument();
+    // no videos - don't show section
+    expect(within(sidebar).queryByText(expectedVideoTitle)).not.toBeInTheDocument();
+  });
+
+  it('filters problems based on filteredBlocks from context', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem2'] }); // Filter for problem2
+    renderComponent({ sections: [] });
+
+    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedProblemTitle,
+            blocks: [mockProblems[1]], // Only problem2
+          },
+        ],
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const problemList = within(sidebar).getByTestId(`content-list-${expectedProblemTitle.replace(/\s+/g, '-')}`);
+    expect(within(problemList).queryByText('Problem A')).not.toBeInTheDocument();
+    expect(within(problemList).getByText('Problem B')).toBeInTheDocument();
+  });
+
+  it('filters videos based on filteredBlocks from context', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: mockVideos } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['video1'] }); // Filter for video1
+    renderComponent({ sections: [] });
+
+    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedVideoTitle,
+            blocks: [mockVideos[0]], // Only video1
+          },
+        ],
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    const videoList = within(sidebar).getByTestId(`content-list-${expectedVideoTitle.replace(/\s+/g, '-')}`);
+    expect(within(videoList).getByText('Video X')).toBeInTheDocument();
+    expect(within(videoList).queryByText('Video Y')).not.toBeInTheDocument();
+  });
+
+  it('handles empty data gracefully', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    renderComponent({ sections: [] }); // No sections either
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [], // Expect empty content list
+      }),
+      {},
+    );
+
+    // Check rendered output
+    const sidebar = screen.getByTestId('mock-aspects-sidebar');
+    expect(within(sidebar).queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+  });
+
+  it('handles null sections gracefully', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    // @ts-expect-error Testing null case even if type doesn't strictly allow it
+    renderComponent({ sections: null });
+
+    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentLists: [
+          {
+            title: expectedProblemTitle,
+            blocks: mockProblems,
+          },
+        ],
+      }),
+      {},
+    );
+    // Ensure graded section title wasn't attempted
+    expect(mockFormatMessage).not.toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
   });
 });
