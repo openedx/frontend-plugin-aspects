@@ -10,12 +10,20 @@ export function CourseHeaderButton() {
   const {
     sidebarOpen,
     setSidebarOpen,
+    setActiveBlock,
+    setFilterUnit,
+    setFilteredBlocks,
   } = useAspectsSidebarContext();
   return (
     <Button
       variant={sidebarOpen ? 'primary' : 'outline-primary'}
       iconBefore={AutoGraph}
-      onClick={() => setSidebarOpen(!sidebarOpen)}
+      onClick={() => {
+        setSidebarOpen(!sidebarOpen);
+        setFilterUnit(null);
+        setActiveBlock(null);
+        setFilteredBlocks([]);
+      }}
     >
       {intl.formatMessage(messages.analyticsLabel)}
     </Button>
