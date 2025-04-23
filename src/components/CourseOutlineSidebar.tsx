@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { useCourseBlocks } from '../hooks';
+import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
-import { useAspectsSidebarContext } from '../hooks';
 import messages from '../messages';
 import { Section, Block, castToBlock } from '../types';
 
