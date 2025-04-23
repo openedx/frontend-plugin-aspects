@@ -5,7 +5,9 @@ import { useAspectsSidebarContext } from '../hooks';
 import { Block, SubSection, castToBlock } from '../types';
 
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
-  const { activeBlock, setActiveBlock, setSidebarOpen } = useAspectsSidebarContext();
+  const {
+    activeBlock, sidebarOpen, setActiveBlock, setSidebarOpen,
+  } = useAspectsSidebarContext();
   if (!subsection.graded) {
     return null;
   }
@@ -13,7 +15,7 @@ export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSecti
     <IconButton
       alt="Analytics"
       iconAs={AutoGraph}
-      isActive={activeBlock?.id === subsection.id}
+      isActive={sidebarOpen && (activeBlock?.id === subsection.id)}
       onClick={() => {
         setSidebarOpen(true);
         setActiveBlock(castToBlock(subsection) as Block);
