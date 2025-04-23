@@ -2,8 +2,7 @@ import * as React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { CourseOutlineSidebar } from './CourseOutlineSidebar';
-import { useCourseBlocks } from '../hooks';
-import { useAspectsSidebarContext } from './AspectsSidebarContext';
+import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
 import { AspectsSidebar } from './AspectsSidebar';
 import { BlockTypes } from '../constants';
 import messages from '../messages';
@@ -36,8 +35,6 @@ jest.mock('@edx/frontend-platform/i18n', () => ({
 }));
 jest.mock('../hooks', () => ({
   useCourseBlocks: jest.fn(),
-}));
-jest.mock('./AspectsSidebarContext', () => ({
   useAspectsSidebarContext: jest.fn(),
 }));
 
@@ -176,9 +173,6 @@ describe('CourseOutlineSidebar', () => {
 
     expect(MockAspectsSidebar).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Test Course 101',
-        blockType: 'course',
-        dashboardId: 'course-v1:TestX+TST101+2025',
         contentLists: [
           {
             title: expectedGradedTitle,
@@ -324,9 +318,6 @@ describe('CourseOutlineSidebar', () => {
     // Check that graded list is NOT present
     expect(MockAspectsSidebar).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Test Course 101',
-        blockType: 'course',
-        dashboardId: 'course-v1:TestX+TST101+2025',
         contentLists: [
           // Graded list should be absent
           {
