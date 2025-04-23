@@ -8,21 +8,21 @@ import { castToBlock, XBlock, Block } from '../types';
 interface Props {
   blockId: string;
   unitTitle: string;
-  verticalBlocks: XBlock[];
+  xBlocks: XBlock[];
 }
 
 export function UnitPageSidebar({
-  blockId, unitTitle, verticalBlocks,
+  blockId, unitTitle, xBlocks,
 }: Props) {
   const { sendMessageToIframe } = useIframe();
   const contentList = {
     title: '',
     blocks: React.useMemo(
       () => {
-        const blocks = castToBlock(verticalBlocks) as Block[];
+        const blocks = castToBlock(xBlocks) as Block[];
         return blocks.filter(block => (block.type === 'problem') || (block.type === 'video'));
       },
-      [verticalBlocks],
+      [xBlocks],
     ),
   };
 
