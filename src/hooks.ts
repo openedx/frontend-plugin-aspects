@@ -134,7 +134,7 @@ export const useAspectsSidebarContext = (): SidebarContext => {
       state.sidebarOpen.set(value);
     },
     setActiveBlock: (value: Block | null) => {
-      state.activeBlock.set(value);
+      state.activeBlock.set(JSON.parse(JSON.stringify(value)));
     },
     setFilteredBlocks: (value: string[]) => {
       state.filteredBlocks.set(value);
