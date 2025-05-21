@@ -14,7 +14,7 @@ import { CourseContentList } from './CourseContentList';
 import { Dashboard } from './Dashboard';
 import { Block } from '../../types';
 
-type ContentList = {
+export type ContentList = {
   title: string;
   blocks: Block[];
 };
