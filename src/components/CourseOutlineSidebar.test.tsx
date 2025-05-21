@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { CourseOutlineSidebar } from './CourseOutlineSidebar';
 import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
@@ -9,23 +9,9 @@ import messages from '../messages';
 import { Section, Block } from '../types';
 import '@testing-library/jest-dom';
 
-// Mock the child component to check props passed to it
+// Mock the AspectsSidebar to check props
 jest.mock('./AspectsSidebar', () => ({
-  AspectsSidebar: jest.fn(({ title, contentLists }) => (
-    <div data-testid="mock-aspects-sidebar" data-title={title}>
-      Mock AspectsSidebar
-      {contentLists.map((list: { title: string, blocks: Block[] }) => (
-        <div key={list.title} data-testid={`content-list-${list.title.replace(/\s+/g, '-')}`}>
-          <h2>{list.title}</h2>
-          <ul>
-            {list.blocks.map((block: Block) => (
-              <li key={block.id}>{block.displayName || block.id}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )),
+  AspectsSidebar: jest.fn(() => null),
 }));
 
 // Mock hooks
@@ -157,15 +143,15 @@ describe('CourseOutlineSidebar', () => {
         title: mockCourseName,
         blockType: BlockTypes.course,
         dashboardId: mockCourseId,
-        contentLists: expect.any(Array), // Check contentLists in more detail below
+        contentLists: expect.any(Array),
       }),
-      {}, // Second argument for context (usually empty for functional components)
+      {},
     );
   });
 
   it('displays graded subsections when available and no filtering is active', () => {
-    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } }); // No problems/videos
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] }); // No filtering
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } });
+    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] });
     renderComponent({ sections: mockSections });
 
     expect(mockFormatMessage).toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
@@ -201,13 +187,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Also check rendered output from mock
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const gradedList = within(sidebar).getByTestId(`content-list-${expectedGradedTitle.replace(/\s+/g, '-')}`);
-    expect(within(gradedList).getByText(expectedGradedTitle)).toBeInTheDocument();
-    expect(within(gradedList).getByText('Graded Sub 1')).toBeInTheDocument();
-    expect(within(gradedList).getByText('Graded Sub 2')).toBeInTheDocument();
   });
 
   it('displays problems when available', () => {
@@ -229,13 +208,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const problemList = within(sidebar).getByTestId(`content-list-${expectedProblemTitle.replace(/\s+/g, '-')}`);
-    expect(within(problemList).getByText(expectedProblemTitle)).toBeInTheDocument();
-    expect(within(problemList).getByText('Problem A')).toBeInTheDocument();
-    expect(within(problemList).getByText('Problem B')).toBeInTheDocument();
   });
 
   it('displays videos when available', () => {
@@ -257,13 +229,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const videoList = within(sidebar).getByTestId(`content-list-${expectedVideoTitle.replace(/\s+/g, '-')}`);
-    expect(within(videoList).getByText(expectedVideoTitle)).toBeInTheDocument();
-    expect(within(videoList).getByText('Video X')).toBeInTheDocument();
-    expect(within(videoList).getByText('Video Y')).toBeInTheDocument();
   });
 
   it('displays all available content lists in order (graded, problems, videos) without filtering', () => {
@@ -297,13 +262,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-    // Check order and presence via rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const lists = within(sidebar).queryAllByRole('heading', { level: 2 });
-    expect(lists).toHaveLength(3);
-    expect(lists[0]).toHaveTextContent(expectedGradedTitle);
-    expect(lists[1]).toHaveTextContent(expectedProblemTitle);
-    expect(lists[2]).toHaveTextContent(expectedVideoTitle);
   });
 
   it('does NOT display graded subsections when filtering is active', () => {
@@ -311,31 +269,20 @@ describe('CourseOutlineSidebar', () => {
     mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem1'] }); // Filtering active
     renderComponent({ sections: mockSections });
 
-    const expectedGradedTitle = messages.gradedSubsectionAnalytics.defaultMessage;
     const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
-    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
 
-    // Check that graded list is NOT present
     expect(MockAspectsSidebar).toHaveBeenCalledWith(
       expect.objectContaining({
         contentLists: [
-          // Graded list should be absent
           {
             title: expectedProblemTitle,
             blocks: [mockProblems[0]], // Only problem1 due to filter
           },
-          // No videos match filter
+          // Videos list would be empty due to filter, so not included
         ],
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    expect(within(sidebar).queryByText(expectedGradedTitle)).not.toBeInTheDocument();
-    expect(within(sidebar).getByText(expectedProblemTitle)).toBeInTheDocument();
-    // no videos - don't show section
-    expect(within(sidebar).queryByText(expectedVideoTitle)).not.toBeInTheDocument();
   });
 
   it('filters problems based on filteredBlocks from context', () => {
@@ -356,12 +303,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const problemList = within(sidebar).getByTestId(`content-list-${expectedProblemTitle.replace(/\s+/g, '-')}`);
-    expect(within(problemList).queryByText('Problem A')).not.toBeInTheDocument();
-    expect(within(problemList).getByText('Problem B')).toBeInTheDocument();
   });
 
   it('filters videos based on filteredBlocks from context', () => {
@@ -382,12 +323,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    const videoList = within(sidebar).getByTestId(`content-list-${expectedVideoTitle.replace(/\s+/g, '-')}`);
-    expect(within(videoList).getByText('Video X')).toBeInTheDocument();
-    expect(within(videoList).queryByText('Video Y')).not.toBeInTheDocument();
   });
 
   it('handles empty data gracefully', () => {
@@ -401,10 +336,6 @@ describe('CourseOutlineSidebar', () => {
       }),
       {},
     );
-
-    // Check rendered output
-    const sidebar = screen.getByTestId('mock-aspects-sidebar');
-    expect(within(sidebar).queryAllByRole('heading', { level: 2 })).toHaveLength(0);
   });
 
   it('handles null sections gracefully', () => {
