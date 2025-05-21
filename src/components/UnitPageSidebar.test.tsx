@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { XBlock } from '../types';
+import { XBlock, Block } from '../types';
 import { UnitPageSidebar } from './UnitPageSidebar';
 import { AspectsSidebar } from './AspectsSidebar';
 import { BlockTypes } from '../constants';
 
 // Mock the AspectsSidebar for testing the props
+const mockSendMessageToIframe = jest.fn();
 jest.mock('./AspectsSidebar', () => ({
   AspectsSidebar: jest.fn(),
 }));
@@ -15,7 +16,7 @@ jest.mock(
   'CourseAuthoring/generic/hooks/context/hooks',
   () => ({
     useIframe: jest.fn(() => ({
-      sendMessageToIframe: jest.fn(),
+      sendMessageToIframe: mockSendMessageToIframe,
     })),
   }),
   { virtual: true },
@@ -42,7 +43,7 @@ const mockXBlocks: XBlock[] = [
 ];
 
 describe('UnitPageSidebar', () => {
-  const MockAspectsSidebar = AspectsSidebar;
+  const MockAspectsSidebar = AspectsSidebar as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -126,5 +127,29 @@ describe('UnitPageSidebar', () => {
       },
       {},
     );
+  });
+
+  it('calls sendMessageToIframe with the correct arguments when blockActivatedCallback is invoked', () => {
+    renderComponent();
+
+    // Get the blockActivatedCallback from the mock call arguments
+    const callback = MockAspectsSidebar.mock.calls[0][0].blockActivatedCallback;
+
+    // Define a mock Block object
+    const mockBlock: Block = {
+      id: 'mock-block-id',
+      type: 'mock-block-type',
+      displayName: 'Mock Block',
+      graded: false,
+    };
+
+    // Call the callback with the mock Block
+    callback(mockBlock);
+
+    // Assert that sendMessageToIframe was called correctly
+    expect(mockSendMessageToIframe).toHaveBeenCalledTimes(1);
+    expect(mockSendMessageToIframe).toHaveBeenCalledWith('scrollToXBlock', {
+      locator: mockBlock.id,
+    });
   });
 });
