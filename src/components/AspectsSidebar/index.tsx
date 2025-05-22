@@ -37,7 +37,7 @@ export function AspectsSidebar({
   const intl = useIntl();
   const {
     sidebarOpen, setSidebarOpen, setFilteredBlocks, activeBlock, setActiveBlock,
-    filterUnit, setFilterUnit,
+    filterUnit, setFilterUnit, filteredBlocks,
   } = useAspectsSidebarContext();
 
   // The activeBlock is not reset during page navigations, leading to stale dashboards.
@@ -88,7 +88,7 @@ export function AspectsSidebar({
   };
 
   return (
-    <div className="w-100 h-100">
+    <div className="w-100 h-100" data-testid="sidebar">
       <Sticky className="shadow rounded" offset={2}>
         <div className="bg-white rounded w-100">
           <Stack className="sidebar-header">
@@ -117,7 +117,7 @@ export function AspectsSidebar({
                 size="sm"
               />
             </Stack>
-            <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center">
+            <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center" data-testid="sidebar-title">
               {(activeBlock) && (
                 <IconButton
                   className="mr-2"
@@ -140,12 +140,12 @@ export function AspectsSidebar({
           { !hideDashboard && (
             <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
           )}
-          {((activeBlockType === 'course') || (activeBlockType === 'vertical'))
+          {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical))
             && contentLists.map(({ title: listTitle, blocks }) => (
               <CourseContentList
                 key={listTitle}
                 title={listTitle}
-                blocks={blocks}
+                blocks={filteredBlocks.length ? blocks.filter((block) => filteredBlocks.includes(block.id)) : blocks}
                 activateDashboard={activateDashboard}
               />
             ))}

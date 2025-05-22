@@ -28,13 +28,9 @@ export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) 
   const { data } = useCourseBlocks(courseId);
 
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
-  let problems = data?.problems;
-  let videos = data?.videos;
+  const problems = data?.problems;
+  const videos = data?.videos;
 
-  if (filteredBlocks?.length) {
-    problems = problems?.filter(block => filteredBlocks.includes(block.id));
-    videos = videos?.filter(block => filteredBlocks.includes(block.id));
-  }
   const contentLists: { title: string, blocks: Block[] }[] = [];
 
   // graded subsections are shown only when unit-filtering is off
