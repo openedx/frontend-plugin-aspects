@@ -134,8 +134,6 @@ describe('UnitPageSidebar', () => {
 
     // Get the blockActivatedCallback from the mock call arguments
     const callback = MockAspectsSidebar.mock.calls[0][0].blockActivatedCallback;
-
-    // Define a mock Block object
     const mockBlock: Block = {
       id: 'mock-block-id',
       type: 'mock-block-type',
@@ -143,10 +141,8 @@ describe('UnitPageSidebar', () => {
       graded: false,
     };
 
-    // Call the callback with the mock Block
     callback(mockBlock);
 
-    // Assert that sendMessageToIframe was called correctly
     expect(mockSendMessageToIframe).toHaveBeenCalledTimes(1);
     expect(mockSendMessageToIframe).toHaveBeenCalledWith('scrollToXBlock', {
       locator: mockBlock.id,

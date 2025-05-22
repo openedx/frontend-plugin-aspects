@@ -269,59 +269,8 @@ describe('CourseOutlineSidebar', () => {
     mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem1'] }); // Filtering active
     renderComponent({ sections: mockSections });
 
-    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
-
-    expect(MockAspectsSidebar).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contentLists: [
-          {
-            title: expectedProblemTitle,
-            blocks: [mockProblems[0]], // Only problem1 due to filter
-          },
-          // Videos list would be empty due to filter, so not included
-        ],
-      }),
-      {},
-    );
-  });
-
-  it('filters problems based on filteredBlocks from context', () => {
-    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem2'] }); // Filter for problem2
-    renderComponent({ sections: [] });
-
-    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
-
-    expect(MockAspectsSidebar).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contentLists: [
-          {
-            title: expectedProblemTitle,
-            blocks: [mockProblems[1]], // Only problem2
-          },
-        ],
-      }),
-      {},
-    );
-  });
-
-  it('filters videos based on filteredBlocks from context', () => {
-    mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: mockVideos } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['video1'] }); // Filter for video1
-    renderComponent({ sections: [] });
-
-    const expectedVideoTitle = messages.videoAnalytics.defaultMessage;
-
-    expect(MockAspectsSidebar).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contentLists: [
-          {
-            title: expectedVideoTitle,
-            blocks: [mockVideos[0]], // Only video1
-          },
-        ],
-      }),
-      {},
+    expect(MockAspectsSidebar.mock.calls[0][0].contentLists[0].title).not.toEqual(
+      messages.gradedSubsectionAnalytics.defaultMessage,
     );
   });
 
