@@ -61,7 +61,7 @@
     "@edx/browserslist-config": "^1.1.1",
     "@edx/eslint-config": "^4.3.0",
     "@edx/typescript-config": "^1.1.0",
-    "@openedx/frontend-build": "14.6.0",
+    "@openedx/frontend-build": "14.6.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
