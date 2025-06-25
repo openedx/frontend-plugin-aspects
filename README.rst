@@ -39,153 +39,153 @@ Development Setup
 
 1. Install `tutor-contrib-aspects`_ and rebuild the edx-platform image
 
-  .. code-block::
+.. code-block::
 
-     pip install tutor-contrib-aspects
-     tutor enable aspects
-     tutor images build openedx --no-cache
-     tutor images build aspects aspects-superset
+   pip install tutor-contrib-aspects
+   tutor enable aspects
+   tutor images build openedx --no-cache
+   tutor images build aspects aspects-superset
 
 2. Clone *frontend-app-authoring*
 
-  .. code-block::
+.. code-block::
 
-     git clone https://github.com/openedx/frontend-app-authoring.git
+   git clone https://github.com/openedx/frontend-app-authoring.git
 
 3. Clone this repo inside *frontend-app-authoring* and install it
 
-  .. code-block::
+.. code-block::
 
-     cd frontend-app-authoring
-     git clone https://github.com/openedx/frontend-plugin-aspects.git
-     npm install ./frontend-plugin-aspects --legacy-peer-deps
+   cd frontend-app-authoring
+   git clone https://github.com/openedx/frontend-plugin-aspects.git
+   npm install ./frontend-plugin-aspects --legacy-peer-deps
 
 4. Create/Update the ``env.config.jsx`` file inside ``frontend-app-authoring`` with the slot definitions
 
-  .. code-block::
+.. code-block::
 
-     import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
-     import {
-       SidebarToggleWrapper,
-       CourseHeaderButton,
-       UnitActionsButton,
-       AspectsSidebarProvider,
-       CourseOutlineSidebar,
-       UnitPageSidebar,
-       SubSectionAnalyticsButton,
-     } from "@openedx/frontend-plugin-aspects";
+   import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
+   import {
+     SidebarToggleWrapper,
+     CourseHeaderButton,
+     UnitActionsButton,
+     AspectsSidebarProvider,
+     CourseOutlineSidebar,
+     UnitPageSidebar,
+     SubSectionAnalyticsButton,
+   } from "@openedx/frontend-plugin-aspects";
 
-     const config = {
-       ...process.env,
-       pluginSlots: {
-         "org.openedx.frontend.authoring.course_outline_sidebar.v1": {
-           keepDefault: true,
-           plugins: [
-             {
-               op: PLUGIN_OPERATIONS.Insert,
-               widget: {
-                 id: "outline-sidebar",
-                 priority: 1,
-                 type: DIRECT_PLUGIN,
-                 RenderWidget: CourseOutlineSidebar,
-               },
-             },
-             {
-               op: PLUGIN_OPERATIONS.Wrap,
-               widgetId: "default_contents",
-               wrapper: SidebarToggleWrapper,
-             },
-           ],
-         },
-         "org.openedx.frontend.authoring.course_unit_sidebar.v2": {
-           keepDefault: true,
-           plugins: [
-             {
-               op: PLUGIN_OPERATIONS.Insert,
-               widget: {
-                 id: "course-unit-sidebar",
-                 priority: 1,
-                 type: DIRECT_PLUGIN,
-                 RenderWidget: UnitPageSidebar,
-               },
-             },
-             {
-               op: PLUGIN_OPERATIONS.Wrap,
-               widgetId: "default_contents",
-               wrapper: SidebarToggleWrapper,
-             },
-           ],
-         },
-         "org.openedx.frontend.authoring.course_outline_header_actions.v1": {
-           keepDefault: true,
-           plugins: [
-             {
-               op: PLUGIN_OPERATIONS.Insert,
-               widget: {
-                 id: "outline-analytics",
-                 type: DIRECT_PLUGIN,
-                 priority: 51,
-                 RenderWidget: CourseHeaderButton,
-               },
-             },
-           ],
-         },
-         "org.openedx.frontend.authoring.course_unit_header_actions.v1": {
-           keepDefault: true,
-           plugins: [
-             {
-               op: PLUGIN_OPERATIONS.Insert,
-               widget: {
-                 id: "unit-analytics",
-                 type: DIRECT_PLUGIN,
-                 priority: 51,
-                 RenderWidget: CourseHeaderButton,
-               },
-             },
-           ],
-         },
-         "org.openedx.frontend.authoring.course_outline_unit_card_extra_actions.v1":
+   const config = {
+     ...process.env,
+     pluginSlots: {
+       "org.openedx.frontend.authoring.course_outline_sidebar.v1": {
+         keepDefault: true,
+         plugins: [
            {
-             keepDefault: true,
-             plugins: [
-               {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "uni-card-my-extra-action",
-                   type: DIRECT_PLUGIN,
-                   priority: 51,
-                   RenderWidget: UnitActionsButton,
-                 },
-               },
-             ],
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "outline-sidebar",
+               priority: 1,
+               type: DIRECT_PLUGIN,
+               RenderWidget: CourseOutlineSidebar,
+             },
            },
-         "org.openedx.frontend.authoring.course_outline_subsection_card_extra_actions.v1":
            {
-             keepDefault: true,
-             plugins: [
-               {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "sub-card-my-extra-action",
-                   type: DIRECT_PLUGIN,
-                   priority: 51,
-                   RenderWidget: SubSectionAnalyticsButton,
-                 },
-               },
-             ],
+             op: PLUGIN_OPERATIONS.Wrap,
+             widgetId: "default_contents",
+             wrapper: SidebarToggleWrapper,
            },
+         ],
        },
-     };
+       "org.openedx.frontend.authoring.course_unit_sidebar.v2": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "course-unit-sidebar",
+               priority: 1,
+               type: DIRECT_PLUGIN,
+               RenderWidget: UnitPageSidebar,
+             },
+           },
+           {
+             op: PLUGIN_OPERATIONS.Wrap,
+             widgetId: "default_contents",
+             wrapper: SidebarToggleWrapper,
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_outline_header_actions.v1": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "outline-analytics",
+               type: DIRECT_PLUGIN,
+               priority: 51,
+               RenderWidget: CourseHeaderButton,
+             },
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_unit_header_actions.v1": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "unit-analytics",
+               type: DIRECT_PLUGIN,
+               priority: 51,
+               RenderWidget: CourseHeaderButton,
+             },
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_outline_unit_card_extra_actions.v1":
+         {
+           keepDefault: true,
+           plugins: [
+             {
+               op: PLUGIN_OPERATIONS.Insert,
+               widget: {
+                 id: "uni-card-my-extra-action",
+                 type: DIRECT_PLUGIN,
+                 priority: 51,
+                 RenderWidget: UnitActionsButton,
+               },
+             },
+           ],
+         },
+       "org.openedx.frontend.authoring.course_outline_subsection_card_extra_actions.v1":
+         {
+           keepDefault: true,
+           plugins: [
+             {
+               op: PLUGIN_OPERATIONS.Insert,
+               widget: {
+                 id: "sub-card-my-extra-action",
+                 type: DIRECT_PLUGIN,
+                 priority: 51,
+                 RenderWidget: SubSectionAnalyticsButton,
+               },
+             },
+           ],
+         },
+     },
+   };
 
-     export default config;
+   export default config;
 
 
 5. Add Authoring MFE source as a tutor mount and rebuild the MFE images
 
-  .. code-block::
+.. code-block::
 
-     tutor mounts add /path/to/frontend-app-authoring
-     tutor images build mfe --no-cache
+   tutor mounts add /path/to/frontend-app-authoring
+   tutor images build mfe --no-cache
 
 6. Start the services using ``turor dev launch``, which should setup everything have the services running.
 7. Edit the code in ``frontend-plugin-aspects`` to make changes and then run ``npm run build`` to update the MFE.
