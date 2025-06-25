@@ -39,7 +39,7 @@ Development Setup
 
 1. Install `tutor-contrib-aspects`_ and rebuild the edx-platform image
 
-.. code-block::
+.. code-block:: sh
 
    pip install tutor-contrib-aspects
    tutor enable aspects
@@ -48,7 +48,7 @@ Development Setup
 
 2. Clone *frontend-app-authoring*
 
-.. code-block::
+.. code-block:: sh
 
    git clone https://github.com/openedx/frontend-app-authoring.git
 
@@ -62,7 +62,7 @@ Development Setup
 
 4. Create/Update the ``env.config.jsx`` file inside ``frontend-app-authoring`` with the slot definitions
 
-.. code-block::
+.. code-block:: jsx
 
    import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
    import {
@@ -182,7 +182,7 @@ Development Setup
 
 5. Add Authoring MFE source as a tutor mount and rebuild the MFE images
 
-.. code-block::
+.. code-block:: sh
 
    tutor mounts add /path/to/frontend-app-authoring
    tutor images build mfe --no-cache
@@ -195,7 +195,7 @@ Development Setup
     As ``npm run build`` needs to be run before changes are reflected in the UI, it is recommended
     to use a file watcher like `nodemon`_ to automate this.
 
-    For example: nodemon --watch src --exec "npm run build"
+    For example: ``nodemon --watch src --exec "npm run build"``
 
 
 .. _nodemon: https://nodemon.io
