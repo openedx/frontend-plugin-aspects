@@ -42,7 +42,8 @@ Development Setup
 .. code-block:: sh
 
    pip install tutor-contrib-aspects
-   tutor enable aspects
+   tutor plugin enable aspects
+   tutor config save --set ASPECTS_ENABLE_STUDIO_IN_CONTEXT_METRICS=True
    tutor images build openedx --no-cache
    tutor images build aspects aspects-superset
 
