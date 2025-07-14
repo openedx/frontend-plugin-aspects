@@ -37,7 +37,7 @@
     "@edx/frontend-platform": "^8.0.3",
     "@openedx/frontend-plugin-framework": "^1.2.1",
     "@openedx/paragon": "^22.8.1 || ^23.0.0",
-    "@tanstack/react-query": "5.81.5",
+    "@tanstack/react-query": "5.83.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^7.2.9 || ^9.0.0",
