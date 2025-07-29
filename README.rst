@@ -59,7 +59,7 @@ Development Setup
 
    cd frontend-app-authoring
    git clone https://github.com/openedx/frontend-plugin-aspects.git
-   npm install ./frontend-plugin-aspects --legacy-peer-deps
+   npm install ./frontend-plugin-aspects
 
 4. Create/Update the ``env.config.jsx`` file inside ``frontend-app-authoring`` with the slot definitions
 
