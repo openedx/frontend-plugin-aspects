@@ -20,7 +20,7 @@ frontend-plugin-aspects
 Purpose
 =======
 
-This is a collection of components meant to integrate Apects into the the pltform UI. They are presently used in on the sidebar slots of the Authoring MFE.
+This is a collection of components meant to integrate Apects into the platform UI. They are presently used in on the sidebar slots of the Authoring MFE.
 
 
 Getting Started
