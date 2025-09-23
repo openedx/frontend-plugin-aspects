@@ -3,25 +3,25 @@ frontend-plugin-aspects
 
 |license-badge| |status-badge| |ci-badge| |codecov-badge|
 
-.. |license-badge| image:: https://img.shields.io/github/license/openedx/frontend-app-[PLACEHOLDER].svg
-    :target: https://github.com/openedx/frontend-app-[PLACEHOLDER]/blob/main/LICENSE
+.. |license-badge| image:: https://img.shields.io/github/license/openedx/frontend-plugin-aspects.svg
+    :target: https://github.com/openedx/frontend-plugin-aspects/blob/main/LICENSE
     :alt: License
 
 .. |status-badge| image:: https://img.shields.io/badge/Status-Maintained-brightgreen
 
-.. |ci-badge| image:: https://github.com/openedx/frontend-app-[PLACEHOLDER]/actions/workflows/ci.yml/badge.svg
-    :target: https://github.com/openedx/frontend-app-[PLACEHOLDER]/actions/workflows/ci.yml
+.. |ci-badge| image:: https://github.com/openedx/frontend-plugin-aspects/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/openedx/frontend-plugin-aspects/actions/workflows/ci.yml
     :alt: Continuous Integration
 
-.. |codecov-badge| image:: https://codecov.io/github/openedx/frontend-app-[PLACEHOLDER]/coverage.svg?branch=main
-    :target: https://codecov.io/github/openedx/frontend-app[PLACEHOLDER]?branch=main
+.. |codecov-badge| image:: https://codecov.io/github/openedx/frontend-plugin-aspects/coverage.svg?branch=main
+    :target: https://codecov.io/github/openedx/frontend-plugin-aspects?branch=main
     :alt: Codecov
 
 Purpose
 =======
 
-This is a collection of components meant to integrate Apects into the the
-pltform UI.
+This is a collection of components meant to integrate Apects into the platform UI. They are presently used in on the sidebar slots of the Authoring MFE.
+
 
 Getting Started
 ===============
@@ -29,30 +29,187 @@ Getting Started
 Configuration
 -------------
 
+The components are added to the Authoring MFE when `tutor-contrib-aspects`_ is used in a Tutor deployment.
+
+.. _tutor-contrib-aspects: https://github.com/openedx/tutor-contrib-aspects
+
+
+Development Setup
+-----------------
+
+1. Install `tutor-contrib-aspects`_ and rebuild the edx-platform image
+
+.. code-block:: sh
+
+   pip install tutor-contrib-aspects
+   tutor plugin enable aspects
+   tutor config save --set ASPECTS_ENABLE_STUDIO_IN_CONTEXT_METRICS=True
+   tutor images build openedx --no-cache
+   tutor images build aspects aspects-superset
+
+2. Clone *frontend-app-authoring*
+
+.. code-block:: sh
+
+   git clone https://github.com/openedx/frontend-app-authoring.git
+
+3. Clone this repo inside *frontend-app-authoring* and install it
+
+.. code-block::
+
+   cd frontend-app-authoring
+   git clone https://github.com/openedx/frontend-plugin-aspects.git
+   npm install ./frontend-plugin-aspects
+
+4. Create/Update the ``env.config.jsx`` file inside ``frontend-app-authoring`` with the slot definitions
+
+.. code-block:: jsx
+
+   import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
+   import {
+     SidebarToggleWrapper,
+     CourseHeaderButton,
+     UnitActionsButton,
+     AspectsSidebarProvider,
+     CourseOutlineSidebar,
+     UnitPageSidebar,
+     SubSectionAnalyticsButton,
+   } from "@openedx/frontend-plugin-aspects";
+
+   const config = {
+     ...process.env,
+     pluginSlots: {
+       "org.openedx.frontend.authoring.course_outline_sidebar.v1": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "outline-sidebar",
+               priority: 1,
+               type: DIRECT_PLUGIN,
+               RenderWidget: CourseOutlineSidebar,
+             },
+           },
+           {
+             op: PLUGIN_OPERATIONS.Wrap,
+             widgetId: "default_contents",
+             wrapper: SidebarToggleWrapper,
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_unit_sidebar.v2": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "course-unit-sidebar",
+               priority: 1,
+               type: DIRECT_PLUGIN,
+               RenderWidget: UnitPageSidebar,
+             },
+           },
+           {
+             op: PLUGIN_OPERATIONS.Wrap,
+             widgetId: "default_contents",
+             wrapper: SidebarToggleWrapper,
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_outline_header_actions.v1": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "outline-analytics",
+               type: DIRECT_PLUGIN,
+               priority: 51,
+               RenderWidget: CourseHeaderButton,
+             },
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_unit_header_actions.v1": {
+         keepDefault: true,
+         plugins: [
+           {
+             op: PLUGIN_OPERATIONS.Insert,
+             widget: {
+               id: "unit-analytics",
+               type: DIRECT_PLUGIN,
+               priority: 51,
+               RenderWidget: CourseHeaderButton,
+             },
+           },
+         ],
+       },
+       "org.openedx.frontend.authoring.course_outline_unit_card_extra_actions.v1":
+         {
+           keepDefault: true,
+           plugins: [
+             {
+               op: PLUGIN_OPERATIONS.Insert,
+               widget: {
+                 id: "uni-card-my-extra-action",
+                 type: DIRECT_PLUGIN,
+                 priority: 51,
+                 RenderWidget: UnitActionsButton,
+               },
+             },
+           ],
+         },
+       "org.openedx.frontend.authoring.course_outline_subsection_card_extra_actions.v1":
+         {
+           keepDefault: true,
+           plugins: [
+             {
+               op: PLUGIN_OPERATIONS.Insert,
+               widget: {
+                 id: "sub-card-my-extra-action",
+                 type: DIRECT_PLUGIN,
+                 priority: 51,
+                 RenderWidget: SubSectionAnalyticsButton,
+               },
+             },
+           ],
+         },
+     },
+   };
+
+   export default config;
+
+
+5. Add Authoring MFE source as a tutor mount and rebuild the MFE images
+
+.. code-block:: sh
+
+   tutor mounts add /path/to/frontend-app-authoring
+   tutor images build mfe --no-cache
+
+6. Start the services using ``turor dev launch``, which should setup everything have the services running.
+7. Edit the code in ``frontend-plugin-aspects`` to make changes and then run ``npm run build`` to update the MFE.
+
 .. note::
 
-   [TODO]
+    As ``npm run build`` needs to be run before changes are reflected in the UI, it is recommended
+    to use a file watcher like `nodemon`_ to automate this.
+
+    For example: ``nodemon --watch src --exec "npm run build"``
+
+
+.. _nodemon: https://nodemon.io
 
 Known Issues
 ============
 
-.. note::
-
-   [TODO]
-
-   If there are long-standing known issues, list them here as a bulletted list,
-   linking to the actual issues in the Github repository.
+N/A
 
 Development Roadmap
 ===================
 
-.. note::
-
-   [TODO]
-
-   Include a list of current development targets, in (rough) descending order
-   of priority.  It can be a simple bulleted list of roadmap items with links
-   to Github issues or wiki pages.
+N/A
 
 Getting Help
 ============
