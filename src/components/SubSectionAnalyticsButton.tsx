@@ -7,6 +7,7 @@ import { Block, SubSection, castToBlock } from '../types';
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
   const {
     activeBlock, sidebarOpen, setActiveBlock, setSidebarOpen,
+    setFilterUnit,
   } = useAspectsSidebarContext();
   if (!subsection.graded) {
     return null;
@@ -18,7 +19,12 @@ export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSecti
       isActive={sidebarOpen && (activeBlock?.id === subsection.id)}
       onClick={() => {
         setSidebarOpen(true);
-        setActiveBlock(castToBlock(subsection) as Block);
+        if (activeBlock?.id === subsection.id) {
+          setActiveBlock(null);
+        } else {
+          setActiveBlock(castToBlock(subsection) as Block);
+          setFilterUnit(null);
+        }
       }}
     />
   );
