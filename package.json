@@ -38,8 +38,8 @@
     "@openedx/frontend-plugin-framework": "^1.7.0",
     "@openedx/paragon": "^23.0.0",
     "@tanstack/react-query": "^5.90.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^18.3.1 || ^19.0.0",
+    "react-dom": "^18.3.1 || ^19.0.0",
     "react-redux": "^7.2.9",
     "react-router-dom": "^6.30.1"
   },
@@ -65,11 +65,11 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "glob": "13.0.0",
     "husky": "9.1.7",
     "jest": "30.2.0",
-    "react-test-renderer": "^18.3.1",
+    "react-test-renderer": "^19.0.0",
     "ts-jest": "^29.4.0",
     "typescript": "^4.9.5"
   }
