@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { CourseOutlineSidebar } from './CourseOutlineSidebar';
+import { CourseOutlineAspectsPage } from './CourseOutlineSidebar';
 import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
 import { AspectsSidebar } from './AspectsSidebar';
 import { BlockTypes } from '../constants';
@@ -103,7 +103,7 @@ const mockVideos: Block[] = [
 ];
 
 // Test Suite
-describe('CourseOutlineSidebar', () => {
+describe('CourseOutlineAspectsPage', () => {
   // Mock implementations setup
   const mockFormatMessage = jest.fn((message) => message.defaultMessage || message.id);
   const mockUseIntl = useIntl as jest.Mock;
@@ -128,7 +128,7 @@ describe('CourseOutlineSidebar', () => {
       courseName: mockCourseName,
       sections: mockSections,
     };
-    return render(<CourseOutlineSidebar {...defaultProps} {...props} />);
+    return render(<CourseOutlineAspectsPage {...defaultProps} {...props} />);
   };
 
   // --- Test Cases ---
