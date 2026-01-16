@@ -1,7 +1,13 @@
 import * as React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { CourseOutlineSidebar } from './CourseOutlineSidebar';
+
+import {
+  useOutlineSidebarPagesContext,
+  // @ts-ignore
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext';
+
+import { CourseOutlineAspectsPage, CourseOutlineSidebarWrapper } from './CourseOutlineSidebar';
 import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
 import { AspectsSidebar } from './AspectsSidebar';
 import { BlockTypes } from '../constants';
@@ -23,6 +29,22 @@ jest.mock('../hooks', () => ({
   useCourseBlocks: jest.fn(),
   useAspectsSidebarContext: jest.fn(),
 }));
+
+jest.mock(
+  'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext',
+  () => {
+    const mockOutlineSidebarPagesContext = React.createContext({});
+    const useOutlineSidebarPagesContextMocked = (
+      () => React.useContext(mockOutlineSidebarPagesContext) as Record<string, any>
+    );
+
+    return {
+      OutlineSidebarPagesContext: mockOutlineSidebarPagesContext,
+      useOutlineSidebarPagesContext: useOutlineSidebarPagesContextMocked,
+    };
+  },
+  { virtual: true },
+);
 
 // Test Data
 const mockCourseId = 'course-v1:TestX+TST101+2025';
@@ -103,7 +125,7 @@ const mockVideos: Block[] = [
 ];
 
 // Test Suite
-describe('CourseOutlineSidebar', () => {
+describe('CourseOutlineAspectsPage', () => {
   // Mock implementations setup
   const mockFormatMessage = jest.fn((message) => message.defaultMessage || message.id);
   const mockUseIntl = useIntl as jest.Mock;
@@ -122,13 +144,13 @@ describe('CourseOutlineSidebar', () => {
     MockAspectsSidebar.mockClear(); // Clear calls specifically for the component mock
   });
 
-  const renderComponent = (props: Partial<React.ComponentProps<typeof CourseOutlineSidebar>> = {}) => {
+  const renderComponent = (props: Partial<React.ComponentProps<typeof CourseOutlineAspectsPage>> = {}) => {
     const defaultProps = {
       courseId: mockCourseId,
       courseName: mockCourseName,
       sections: mockSections,
     };
-    return render(<CourseOutlineSidebar {...defaultProps} {...props} />);
+    return render(<CourseOutlineAspectsPage {...defaultProps} {...props} />);
   };
 
   // --- Test Cases ---
@@ -308,5 +330,32 @@ describe('CourseOutlineSidebar', () => {
     );
     // Ensure graded section title wasn't attempted
     expect(mockFormatMessage).not.toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
+  });
+});
+
+function MockComponent() {
+  const sidebarPages = useOutlineSidebarPagesContext();
+
+  // Return a div with the title of the analytics page, reading from the context
+  return (
+    <div>
+      {sidebarPages.analytics.title.defaultMessage}
+    </div>
+  );
+}
+
+describe('CourseOutlineSidebarWrapper', () => {
+  const renderComponent = () => render(<CourseOutlineSidebarWrapper
+    component={<MockComponent />}
+    pluginProps={{
+      courseId: mockCourseId,
+      courseName: mockCourseName,
+      sections: mockSections,
+    }}
+  />);
+
+  it('adds analytics page to the sidebar', () => {
+    renderComponent();
+    expect(screen.getByText('Analytics')).toBeInTheDocument();
   });
 });

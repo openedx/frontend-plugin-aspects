@@ -1,7 +1,6 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Icon, IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
-import * as React from 'react';
 import messages from '../messages';
 import { useAspectsSidebarContext, useChildBlockCounts } from '../hooks';
 import { Block, Unit, castToBlock } from '../types';
@@ -11,8 +10,6 @@ export function UnitActionsButton({
 }: { unit: Unit }) {
   const intl = useIntl();
   const {
-    sidebarOpen,
-    setSidebarOpen,
     setFilteredBlocks,
     setActiveBlock,
     filterUnit,
@@ -28,7 +25,7 @@ export function UnitActionsButton({
   return (
     <IconButton
       isActive={
-        sidebarOpen && (
+        (
           (filterUnit?.id === unit.id)
           || (!!activeBlock && (activeBlock?.id in data.blocks))
         )
@@ -38,7 +35,6 @@ export function UnitActionsButton({
       iconAs={Icon}
       variant="black"
       onClick={() => {
-        setSidebarOpen(true);
         if (filterUnit?.id === unit.id) {
           setActiveBlock(null);
           setFilteredBlocks([]);
