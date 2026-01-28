@@ -100,14 +100,12 @@ export const useChildBlockCounts = (usageKey: string) : { data: BlockResponse | 
 };
 
 type SidebarState = {
-  sidebarOpen: boolean,
   activeBlock: Block | null,
   filteredBlocks: string[],
   filterUnit: Block | null,
 };
 
 const sidebarState = hookstate<SidebarState>({
-  sidebarOpen: false,
   activeBlock: null,
   filteredBlocks: [],
   filterUnit: null,
@@ -116,7 +114,6 @@ const sidebarState = hookstate<SidebarState>({
 interface SidebarContextFunctions {
   setActiveBlock: (block: Block | null) => void,
   setFilteredBlocks: (blocks: string[]) => void,
-  setSidebarOpen: (value: boolean) => void,
   setFilterUnit: (block: Block | null) => void,
 }
 
@@ -126,13 +123,9 @@ export const useAspectsSidebarContext = (): SidebarContext => {
   const state = useHookstate(sidebarState);
 
   return {
-    sidebarOpen: state.sidebarOpen.get(),
     activeBlock: state.activeBlock.get(),
     filteredBlocks: state.filteredBlocks.get() as string[],
     filterUnit: state.filterUnit.get(),
-    setSidebarOpen: (value: boolean) => {
-      state.sidebarOpen.set(value);
-    },
     setActiveBlock: (value: Block | null) => {
       state.activeBlock.set(JSON.parse(JSON.stringify(value)));
     },

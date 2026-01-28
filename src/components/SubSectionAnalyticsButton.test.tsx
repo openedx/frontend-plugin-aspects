@@ -47,7 +47,6 @@ const mockSubsections: SubSection[] = [
 const mockUseAspectsSidebarContext = useAspectsSidebarContext as jest.Mock;
 
 describe('SubSectionAnalyticsButton', () => {
-  const mockSetSidebarOpen = jest.fn();
   const mockSetActiveBlock = jest.fn();
   const mockSetFilterUnit = jest.fn();
 
@@ -55,7 +54,6 @@ describe('SubSectionAnalyticsButton', () => {
     activeBlock: null,
     sidebarOpen: false,
     setActiveBlock: mockSetActiveBlock,
-    setSidebarOpen: mockSetSidebarOpen,
     setFilterUnit: mockSetFilterUnit,
   };
 
@@ -79,7 +77,6 @@ describe('SubSectionAnalyticsButton', () => {
     const button = screen.getByRole('button', { name: /analytics/i });
     await user.click(button);
 
-    expect(mockSetSidebarOpen).toHaveBeenCalledWith(true);
     expect(mockSetActiveBlock).toHaveBeenCalledWith(expect.objectContaining({
       id: mockSubsection.id,
     }));
@@ -92,14 +89,12 @@ describe('SubSectionAnalyticsButton', () => {
     mockUseAspectsSidebarContext.mockReturnValue({
       ...defaultContextValue,
       activeBlock: { id: mockSubsection.id } as any,
-      sidebarOpen: true,
     });
 
     render(<SubSectionAnalyticsButton subsection={mockSubsection} />);
     const button = screen.getByRole('button', { name: /analytics/i });
     await user.click(button);
 
-    expect(mockSetSidebarOpen).toHaveBeenCalledWith(true);
     expect(mockSetActiveBlock).toHaveBeenCalledWith(null);
     expect(mockSetFilterUnit).not.toHaveBeenCalled();
   });

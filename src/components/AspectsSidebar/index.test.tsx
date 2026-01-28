@@ -71,7 +71,6 @@ const defaultProps = {
 };
 
 type InitialState = {
-  sidebarOpen: boolean,
   activeBlock?: Block | null,
   filterUnit?: Block | null,
   filteredBlocks?: string[]
@@ -79,16 +78,11 @@ type InitialState = {
 
 // Helper component to set context values for tests
 function TestContextHelper({
-  sidebarOpen = true, activeBlock = null, filterUnit = null, filteredBlocks = [],
+  activeBlock = null, filterUnit = null, filteredBlocks = [],
 }: InitialState) {
   const {
-    setSidebarOpen, setActiveBlock, setFilterUnit, setFilteredBlocks,
+    setActiveBlock, setFilterUnit, setFilteredBlocks,
   } = useAspectsSidebarContext();
-
-  // This effect is run only one to set the initial state for the tests.
-  React.useEffect(() => {
-    setSidebarOpen(sidebarOpen);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The sidebar will clear active/filter stuff to render cleanly on initalization
   // So, we can't set these values in the useEffect above. The only way to cleanly
@@ -109,7 +103,7 @@ function TestContextHelper({
 
 describe('AspectsSidebar', () => {
   const renderComponent = (
-    initialState: InitialState = { sidebarOpen: true },
+    initialState: InitialState = {},
     props?: Partial<React.ComponentProps<typeof AspectsSidebar>>,
   ) => render(
 
@@ -124,19 +118,6 @@ describe('AspectsSidebar', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('closes the sidebar when the close button is clicked', async () => {
-    renderComponent();
-    // Ensure the sidebar is initially open and visible
-    expect(screen.getByTestId('sidebar')).toBeVisible();
-    expect(screen.getByTestId('sidebar-title')).toHaveTextContent('Test Course');
-
-    const closeButton = screen.getByRole('button', { name: 'Close' });
-    fireEvent.click(closeButton);
-
-    // Assert that the sidebar is no longer visible
-    expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
   });
 
   it('shows the back button and changes the title when a block is clicked', () => {
@@ -168,7 +149,7 @@ describe('AspectsSidebar', () => {
 
   it('shows an Alert message when the content lists are empty on a Unit Page', () => {
     // NOTE: Currently there is not "Unit Page Dashboard", hence the alert
-    renderComponent({ sidebarOpen: true }, { blockType: BlockTypes.vertical, contentLists: [] });
+    renderComponent(undefined, { blockType: BlockTypes.vertical, contentLists: [] });
 
     expect(mockDashboard).not.toHaveBeenCalled();
     expect(screen.getByRole('alert')).toHaveTextContent(messages.noAnalyticsForUnit.defaultMessage);
@@ -177,7 +158,6 @@ describe('AspectsSidebar', () => {
   it('shows filtered set of components in the Course Outline view when specific unit is selected', () => {
     // render the component as if the "UnitActionsButton" has been clicked
     renderComponent({
-      sidebarOpen: true,
       activeBlock: mockUnit,
       filterUnit: mockUnit,
       filteredBlocks: ['block-v1:TEST+COURSE+SECTION1+prob2'],
@@ -194,7 +174,6 @@ describe('AspectsSidebar', () => {
 
   it('navigate to component and back in filtered unit view', () => {
     renderComponent({
-      sidebarOpen: true,
       activeBlock: mockUnit,
       filterUnit: mockUnit,
       filteredBlocks: ['block-v1:TEST+COURSE+SECTION1+prob2'],
@@ -220,7 +199,7 @@ describe('AspectsSidebar', () => {
 
   it('posts a callback with the activatedBlock in Unit Page View', () => {
     const callback = jest.fn();
-    renderComponent({ sidebarOpen: true }, {
+    renderComponent(undefined, {
       title: 'Test Unit',
       blockType: BlockTypes.vertical,
       contentLists: mockContentLists.slice(0, 1),
