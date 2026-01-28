@@ -1,6 +1,8 @@
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Icon, IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
+import * as React from 'react';
+
 import messages from '../messages';
 import { useAspectsSidebarContext, useChildBlockCounts } from '../hooks';
 import { Block, Unit, castToBlock } from '../types';
