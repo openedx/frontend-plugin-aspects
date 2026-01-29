@@ -5,7 +5,6 @@ import { AutoGraph } from '@openedx/paragon/icons';
 import {
   OutlineSidebarPagesContext,
   useOutlineSidebarPagesContext,
-// @ts-ignore
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext';
 
 import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
