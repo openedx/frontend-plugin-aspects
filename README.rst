@@ -66,14 +66,12 @@ Development Setup
 
     .. code-block:: jsx
 
+<<<<<<< HEAD
        import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
        import {
-         SidebarToggleWrapper,
-         CourseHeaderButton,
          UnitActionsButton,
-         AspectsSidebarProvider,
-         CourseOutlineSidebar,
-         UnitPageSidebar,
+         CourseOutlineSidebarWrapper,
+         UnitOutlineSidebarWrapper,
          SubSectionAnalyticsButton,
        } from "@openedx/frontend-plugin-aspects";
     
@@ -84,18 +82,9 @@ Development Setup
              keepDefault: true,
              plugins: [
                {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "outline-sidebar",
-                   priority: 1,
-                   type: DIRECT_PLUGIN,
-                   RenderWidget: CourseOutlineSidebar,
-                 },
-               },
-               {
                  op: PLUGIN_OPERATIONS.Wrap,
                  widgetId: "default_contents",
-                 wrapper: SidebarToggleWrapper,
+                 wrapper: CourseOutlineSidebarWrapper,
                },
              ],
            },
@@ -103,46 +92,9 @@ Development Setup
              keepDefault: true,
              plugins: [
                {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "course-unit-sidebar",
-                   priority: 1,
-                   type: DIRECT_PLUGIN,
-                   RenderWidget: UnitPageSidebar,
-                 },
-               },
-               {
                  op: PLUGIN_OPERATIONS.Wrap,
                  widgetId: "default_contents",
-                 wrapper: SidebarToggleWrapper,
-               },
-             ],
-           },
-           "org.openedx.frontend.authoring.course_outline_header_actions.v1": {
-             keepDefault: true,
-             plugins: [
-               {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "outline-analytics",
-                   type: DIRECT_PLUGIN,
-                   priority: 51,
-                   RenderWidget: CourseHeaderButton,
-                 },
-               },
-             ],
-           },
-           "org.openedx.frontend.authoring.course_unit_header_actions.v1": {
-             keepDefault: true,
-             plugins: [
-               {
-                 op: PLUGIN_OPERATIONS.Insert,
-                 widget: {
-                   id: "unit-analytics",
-                   type: DIRECT_PLUGIN,
-                   priority: 51,
-                   RenderWidget: CourseHeaderButton,
-                 },
+                 wrapper: UnitOutlineSidebarWrapper,
                },
              ],
            },

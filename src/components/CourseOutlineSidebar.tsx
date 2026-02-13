@@ -1,7 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { AutoGraph } from '@openedx/paragon/icons';
 
+import {
+  useOutlineSidebarContext,
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
 import {
   OutlineSidebarPagesContext,
   useOutlineSidebarPagesContext,
@@ -31,17 +34,24 @@ function* getGradedSubsections(sections: Section[]) {
 
 export function CourseOutlineAspectsPage({ courseId, courseName, sections }: CourseOutlineAspectsPageProps) {
   const intl = useIntl();
-  const { filteredBlocks } = useAspectsSidebarContext();
+  const { filteredBlocks, setFilteredBlocks } = useAspectsSidebarContext();
   const { data } = useCourseBlocks(courseId);
+  const { currentItemData } = useOutlineSidebarContext();
 
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
   const problems = data?.problems;
   const videos = data?.videos;
 
+  useEffect(() => {
+    if (currentItemData?.id) {
+      setFilteredBlocks([currentItemData.id]);
+    }
+  }, [currentItemData]);
+
   const contentLists: { title: string, blocks: Block[] }[] = [];
 
   // graded subsections are shown only when unit-filtering is off
-  if (!filteredBlocks?.length && gradedSubsections?.length) {
+  if (!filteredBlocks.length && gradedSubsections?.length) {
     contentLists.push({
       title: intl.formatMessage(messages.gradedSubsectionAnalytics),
       blocks: castToBlock(gradedSubsections) as Block[],
