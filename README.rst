@@ -63,6 +63,8 @@ Development Setup
 
 4. Create/Update the ``env.config.jsx`` file inside ``frontend-app-authoring`` with the slot definitions
 
+
+FIXME: Update
 .. code-block:: jsx
 
    import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
@@ -71,8 +73,8 @@ Development Setup
      CourseHeaderButton,
      UnitActionsButton,
      AspectsSidebarProvider,
-     CourseOutlineSidebar,
-     UnitPageSidebar,
+     CourseOutlineSidebarWrapper,
+     UnitOutlineSidebarWrapper,
      SubSectionAnalyticsButton,
    } from "@openedx/frontend-plugin-aspects";
 

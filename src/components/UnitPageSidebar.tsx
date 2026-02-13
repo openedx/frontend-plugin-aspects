@@ -1,19 +1,27 @@
-import * as React from 'react';
-// @ts-ignore
-import { useIframe } from 'CourseAuthoring/generic/hooks/context/hooks';
-import { BlockTypes } from '../constants';
-import { AspectsSidebar, ContentList } from './AspectsSidebar';
-import { castToBlock, XBlock, Block } from '../types';
+import React, { useCallback, useMemo } from 'react';
+import { AutoGraph } from '@openedx/paragon/icons';
 
-interface Props {
+
+import {
+  UnitSidebarPagesContext,
+  useUnitSidebarPagesContext,
+} from 'CourseAuthoring/course-unit/unit-sidebar/UnitSidebarPagesContext';
+import { useIframe } from 'CourseAuthoring/generic/hooks/context/hooks';
+
+import { BlockTypes } from '../constants';
+import messages from '../messages';
+import { castToBlock, XBlock, Block } from '../types';
+import { AspectsSidebar, ContentList } from './AspectsSidebar';
+
+interface UnitOutlineAspectsPageProps {
   blockId: string;
   unitTitle: string;
   xBlocks: XBlock[];
 }
 
-export function UnitPageSidebar({
+export function UnitOutlineAspectsPage({
   blockId, unitTitle, xBlocks,
-}: Props) {
+}: UnitOutlineAspectsPageProps) {
   const { sendMessageToIframe } = useIframe();
   const contentLists: ContentList[] = [];
   if (xBlocks && xBlocks.length) {
@@ -32,5 +40,31 @@ export function UnitPageSidebar({
       contentLists={contentLists}
       blockActivatedCallback={(block: Block) => sendMessageToIframe('scrollToXBlock', { locator: block.id })}
     />
+  );
+}
+
+export function UnitOutlineSidebarWrapper(
+  { component, pluginProps }: { component: React.ReactNode, pluginProps: UnitOutlineAspectsPageProps},
+) {
+  const sidebarPages = useUnitSidebarPagesContext();
+  console.log('Inside UnitOutlineSidebarWrapper');
+
+  const AnalyticsPage = useCallback(() => <UnitOutlineAspectsPage {...pluginProps} />, [pluginProps]);
+
+  const overridedPages = useMemo(() => ({
+    ...sidebarPages,
+    analytics: {
+      component: AnalyticsPage,
+      icon: AutoGraph,
+      title: messages.analyticsLabel,
+    },
+  }), [sidebarPages, AnalyticsPage]);
+
+  console.log('overridedPages', overridedPages);
+
+  return (
+    <UnitSidebarPagesContext.Provider value={overridedPages}>
+      {component}
+    </UnitSidebarPagesContext.Provider>
   );
 }

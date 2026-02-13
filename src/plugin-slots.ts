@@ -1,7 +1,7 @@
 import { DIRECT_PLUGIN, PLUGIN_OPERATIONS } from '@openedx/frontend-plugin-framework';
 import { UnitActionsButton } from './components/UnitActionsButton';
 import { CourseOutlineSidebarWrapper } from './components/CourseOutlineSidebar';
-import { UnitPageSidebar } from './components/UnitPageSidebar';
+import { UnitOutlineSidebarWrapper } from './components/UnitPageSidebar';
 
 export const pluginSlots = {
   course_authoring_outline_sidebar_slot: {
@@ -9,10 +9,8 @@ export const pluginSlots = {
     plugins: [
       {
         op: PLUGIN_OPERATIONS.Wrap,
-        widget: {
-          id: 'default_contents',
-          RenderWidget: CourseOutlineSidebarWrapper,
-        },
+        widgetId: 'default_contents',
+        wrapper: CourseOutlineSidebarWrapper,
       },
     ],
   },
@@ -20,13 +18,9 @@ export const pluginSlots = {
     keepDefault: true,
     plugins: [
       {
-        op: PLUGIN_OPERATIONS.Insert,
-        widget: {
-          id: 'course-unit-sidebar',
-          priority: 1,
-          type: DIRECT_PLUGIN,
-          RenderWidget: UnitPageSidebar,
-        },
+        op: PLUGIN_OPERATIONS.Wrap,
+        widgetId: 'default_contents',
+        wrapper: UnitOutlineSidebarWrapper,
       },
     ],
   },
