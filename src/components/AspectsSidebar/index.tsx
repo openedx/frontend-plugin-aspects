@@ -85,54 +85,50 @@ export function AspectsSidebar({
 
   return (
     <div className="w-100 h-100" data-testid="sidebar">
-      <Sticky className="shadow rounded" offset={2}>
-        <div className="bg-white rounded w-100">
-          <Stack className="sidebar-header">
-            <h3 className="h3 p-4 mb-0 d-flex align-items-center" data-testid="sidebar-title">
-              {(activeBlock) && (
-                <IconButton
-                  className="mr-2"
-                  alt={intl.formatMessage(messages.backButtonLabel)}
-                  src={ArrowBack}
-                  iconAs={Icon}
-                  onClick={() => goBack()}
-                  size="sm"
-                />
-              )}
-              <Icon
-                src={ICON_MAP[activeBlockType]}
+        <Stack className="sidebar-header">
+          <h3 className="h3 p-4 mb-0 d-flex align-items-center" data-testid="sidebar-title">
+            {(activeBlock) && (
+              <IconButton
+                className="mr-2"
+                alt={intl.formatMessage(messages.backButtonLabel)}
+                src={ArrowBack}
+                iconAs={Icon}
+                onClick={() => goBack()}
                 size="sm"
-                className="d-inline-block mr-2 text-gray"
-                aria-hidden
               />
-              <span>{topTitle}</span>
-            </h3>
-          </Stack>
-          { !hideDashboard && (
-            <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
-          )}
-          {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical))
-            && contentLists.map(({ title: listTitle, blocks }) => (
-              <CourseContentList
-                key={listTitle}
-                title={listTitle}
-                blocks={filteredBlocks.length ? blocks.filter((block) => filteredBlocks.includes(block.id)) : blocks}
-                activateDashboard={activateDashboard}
-              />
-            ))}
-
-          {(hideDashboard && !contentListSize)
-            && (
-            <Alert icon={Warning} variant="warning" className="mb-0">
-              {
-                blockType === 'course'
-                  ? intl.formatMessage(messages.noAnalyticsForCourse)
-                  : intl.formatMessage(messages.noAnalyticsForUnit)
-              }
-            </Alert>
             )}
-        </div>
-      </Sticky>
+            <Icon
+              src={ICON_MAP[activeBlockType]}
+              size="sm"
+              className="d-inline-block mr-2 text-gray"
+              aria-hidden
+            />
+            <span>{topTitle}</span>
+          </h3>
+        </Stack>
+        { !hideDashboard && (
+          <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
+        )}
+        {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical))
+          && contentLists.map(({ title: listTitle, blocks }) => (
+            <CourseContentList
+              key={listTitle}
+              title={listTitle}
+              blocks={filteredBlocks.length ? blocks.filter((block) => filteredBlocks.includes(block.id)) : blocks}
+              activateDashboard={activateDashboard}
+            />
+          ))}
+
+        {(hideDashboard && !contentListSize)
+          && (
+          <Alert icon={Warning} variant="warning" className="mb-0">
+            {
+              blockType === 'course'
+                ? intl.formatMessage(messages.noAnalyticsForCourse)
+                : intl.formatMessage(messages.noAnalyticsForUnit)
+            }
+          </Alert>
+          )}
     </div>
   );
 }
