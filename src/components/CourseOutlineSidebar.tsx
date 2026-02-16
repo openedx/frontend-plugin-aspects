@@ -1,12 +1,19 @@
-import * as React from 'react';
+import React, { useMemo } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import { AutoGraph } from '@openedx/paragon/icons';
+
+import {
+  OutlineSidebarPagesContext,
+  useOutlineSidebarPagesContext,
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext';
+
 import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
 import messages from '../messages';
 import { Section, Block, castToBlock } from '../types';
 
-interface Props {
+interface CourseOutlineAspectsPageProps {
   courseId: string;
   courseName: string;
   sections: Section[];
@@ -22,7 +29,7 @@ function* getGradedSubsections(sections: Section[]) {
   }
 }
 
-export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) {
+export function CourseOutlineAspectsPage({ courseId, courseName, sections }: CourseOutlineAspectsPageProps) {
   const intl = useIntl();
   const { filteredBlocks } = useAspectsSidebarContext();
   const { data } = useCourseBlocks(courseId);
@@ -60,5 +67,28 @@ export function CourseOutlineSidebar({ courseId, courseName, sections }: Props) 
       dashboardId={courseId}
       contentLists={contentLists}
     />
+  );
+}
+
+export function CourseOutlineSidebarWrapper(
+  { component, pluginProps }: { component: React.ReactNode, pluginProps: CourseOutlineAspectsPageProps },
+) {
+  const sidebarPages = useOutlineSidebarPagesContext();
+
+  const AnalyticsPage = React.useCallback(() => <CourseOutlineAspectsPage {...pluginProps} />, [pluginProps]);
+
+  const overridedPages = useMemo(() => ({
+    ...sidebarPages,
+    analytics: {
+      component: AnalyticsPage,
+      icon: AutoGraph,
+      title: messages.analyticsLabel,
+    },
+  }), [sidebarPages, AnalyticsPage]);
+
+  return (
+    <OutlineSidebarPagesContext.Provider value={overridedPages}>
+      {component}
+    </OutlineSidebarPagesContext.Provider>
   );
 }

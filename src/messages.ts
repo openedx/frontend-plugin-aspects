@@ -6,11 +6,6 @@ const messages = defineMessages({
     defaultMessage: 'Analytics',
     description: 'Label for the analytics buttons on the course outline and unit header etc.',
   },
-  closeButtonLabel: {
-    id: 'aspects.button.close.alt',
-    defaultMessage: 'Close',
-    description: 'Label for the close icon button in the sidebar.',
-  },
   backButtonLabel: {
     id: 'aspects.button.back.alt',
     defaultMessage: 'Back',

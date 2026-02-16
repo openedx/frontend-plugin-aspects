@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
 import { useAspectsSidebarContext } from '../hooks';
@@ -6,8 +5,7 @@ import { Block, SubSection, castToBlock } from '../types';
 
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
   const {
-    activeBlock, sidebarOpen, setActiveBlock, setSidebarOpen,
-    setFilterUnit,
+    activeBlock, setActiveBlock, setFilterUnit,
   } = useAspectsSidebarContext();
   if (!subsection.graded) {
     return null;
@@ -16,9 +14,8 @@ export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSecti
     <IconButton
       alt="Analytics"
       iconAs={AutoGraph}
-      isActive={sidebarOpen && (activeBlock?.id === subsection.id)}
+      isActive={activeBlock?.id === subsection.id}
       onClick={() => {
-        setSidebarOpen(true);
         if (activeBlock?.id === subsection.id) {
           setActiveBlock(null);
         } else {
