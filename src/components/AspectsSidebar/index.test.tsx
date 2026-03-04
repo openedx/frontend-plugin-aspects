@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BlockTypes } from '../../constants';
 import { AspectsSidebar, ContentList } from '.';

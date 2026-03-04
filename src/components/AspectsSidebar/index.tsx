@@ -1,18 +1,20 @@
+import React from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import * as React from 'react';
 import {
-  Alert, Icon, IconButton, Stack,
+  Alert,
 } from '@openedx/paragon';
 import {
-  ArrowBack, Warning,
+  Warning,
 } from '@openedx/paragon/icons';
+
+import { SidebarContent, SidebarSection, SidebarTitle  } from 'CourseAuthoring/generic/sidebar';
+
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { useAspectsSidebarContext } from '../../hooks';
-
 import messages from '../../messages';
+import { Block } from '../../types';
 import { CourseContentList } from './CourseContentList';
 import { Dashboard } from './Dashboard';
-import { Block } from '../../types';
 
 export type ContentList = {
   title: string;
@@ -72,6 +74,7 @@ export function AspectsSidebar({
     // Go back to the filtered view of the unit
     if (filterUnit && (activeBlock?.id !== filterUnit.id)) {
       setActiveBlock(filterUnit);
+      setFilteredBlocks([]);
     } else if (filterUnit?.id === activeBlock?.id) {
       // Viewing the filtered view of a unit - go back to full course view
       setActiveBlock(null);
@@ -80,55 +83,49 @@ export function AspectsSidebar({
     } else {
       // reset to default view for all other cases
       setActiveBlock(null);
+      setFilteredBlocks([]);
     }
   };
 
   return (
-    <div className="w-100 h-100" data-testid="sidebar">
-      <Stack className="sidebar-header">
-        <h3 className="h3 p-4 mb-0 d-flex align-items-center" data-testid="sidebar-title">
-          {(activeBlock) && (
-            <IconButton
-              className="mr-2"
-              alt={intl.formatMessage(messages.backButtonLabel)}
-              src={ArrowBack}
-              iconAs={Icon}
-              onClick={() => goBack()}
-              size="sm"
-            />
-          )}
-          <Icon
-            src={ICON_MAP[activeBlockType]}
-            size="sm"
-            className="d-inline-block mr-2 text-gray"
-            aria-hidden
-          />
-          <span>{topTitle}</span>
-        </h3>
-      </Stack>
-      { !hideDashboard && (
-        <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
-      )}
-      {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical))
-        && contentLists.map(({ title: listTitle, blocks }) => (
-          <CourseContentList
-            key={listTitle}
-            title={listTitle}
-            blocks={filteredBlocks.length ? blocks.filter((block) => filteredBlocks.includes(block.id)) : blocks}
-            activateDashboard={activateDashboard}
-          />
-        ))}
-
-      {(hideDashboard && !contentListSize)
-        && (
-        <Alert icon={Warning} variant="warning" className="mb-0">
-          {
-            blockType === 'course'
-              ? intl.formatMessage(messages.noAnalyticsForCourse)
-              : intl.formatMessage(messages.noAnalyticsForUnit)
-          }
-        </Alert>
+    <div data-testid="sidebar">
+      <SidebarTitle
+        title={topTitle}
+        icon={ICON_MAP[activeBlockType]}
+        onBackBtnClick={activeBlock ? goBack : undefined}
+      />
+      <SidebarContent>
+        { !hideDashboard && (
+          <SidebarSection>
+            <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
+          </SidebarSection>
         )}
+        {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical)) && (
+          contentLists.map(({ title: listTitle, blocks }) => {
+            const resultBlocks = filteredBlocks.length
+              ? blocks.filter((block) => filteredBlocks.includes(block.id))
+              : blocks;
+
+            return resultBlocks.length ? (
+              <SidebarSection key={listTitle} title={listTitle}>
+                <CourseContentList
+                  blocks={resultBlocks}
+                  activateDashboard={activateDashboard}
+                />
+              </SidebarSection>
+            ) : null;
+          })
+        )}
+        {(hideDashboard && !contentListSize) && (
+          <Alert icon={Warning} variant="warning" className="mb-0">
+            {
+              blockType === 'course'
+                ? intl.formatMessage(messages.noAnalyticsForCourse)
+                : intl.formatMessage(messages.noAnalyticsForUnit)
+            }
+          </Alert>
+        )}
+      </SidebarContent>
     </div>
   );
 }

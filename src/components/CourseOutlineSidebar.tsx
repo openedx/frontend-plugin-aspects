@@ -10,7 +10,7 @@ import {
   useOutlineSidebarPagesContext,
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext';
 
-import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
+import { useCourseBlocks, useChildBlockCounts, useAspectsSidebarContext } from '../hooks';
 import { BlockTypes } from '../constants';
 import { AspectsSidebar } from './AspectsSidebar';
 import messages from '../messages';
@@ -34,46 +34,76 @@ function* getGradedSubsections(sections: Section[]) {
 
 export function CourseOutlineAspectsPage({ courseId, courseName, sections }: CourseOutlineAspectsPageProps) {
   const intl = useIntl();
-  const { filteredBlocks, setFilteredBlocks } = useAspectsSidebarContext();
-  const { data } = useCourseBlocks(courseId);
+  const {
+    filteredBlocks, setActiveBlock, setFilteredBlocks, setFilterUnit,
+  } = useAspectsSidebarContext();
+  const { data: courseBlockData } = useCourseBlocks(courseId);
   const { currentItemData } = useOutlineSidebarContext();
+  const { data: childBlockData } = useChildBlockCounts(currentItemData?.id);
 
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
-  const problems = data?.problems;
-  const videos = data?.videos;
+  const problems = courseBlockData?.problems;
+  const videos = courseBlockData?.videos;
 
   useEffect(() => {
+    // This effect is called when the currentItemData changes.
+    // It sets the activeBlock and filteredBlocks based on the currentItemData
+    // and the childBlockData.
     if (currentItemData?.id) {
-      setFilteredBlocks([currentItemData.id]);
-    }
-  }, [currentItemData]);
+      if (currentItemData.category === 'vertical') {
+        // Show all the blocks of the current unit
+        setActiveBlock(castToBlock(currentItemData));
+        const childBlocks = childBlockData ? Object.keys(childBlockData.blocks) : [];
+        // If we doesn't have the child blocks, we'll filter out all the blocks
+        setFilteredBlocks(childBlocks.length ? childBlocks : ['no-blocks']);
+        setFilterUnit(castToBlock(currentItemData));
+      } else if (currentItemData.category === 'sequential') {
+        // Show graded subsections data
+        setFilterUnit(null);
+        setFilteredBlocks([]);
+        setActiveBlock(castToBlock(currentItemData));
+      }
+      else {
+        // We don't have any specific view for Sections, so we'll show the course view
+        setActiveBlock(null);
+        setFilterUnit(null);
+        setFilteredBlocks([]);
+      }
+    } else {
+      setActiveBlock(null);
+      setFilterUnit(null);
+    };
+  }, [currentItemData, childBlockData]);
 
   const contentLists: { title: string, blocks: Block[] }[] = [];
 
-  // graded subsections are shown only when unit-filtering is off
-  if (!filteredBlocks.length && gradedSubsections?.length) {
-    contentLists.push({
-      title: intl.formatMessage(messages.gradedSubsectionAnalytics),
-      blocks: castToBlock(gradedSubsections) as Block[],
-    });
-  }
-  if (problems?.length) {
-    contentLists.push({
-      title: intl.formatMessage(messages.problemAnalytics),
-      blocks: problems,
-    });
-  }
-  if (videos?.length) {
-    contentLists.push({
-      title: intl.formatMessage(messages.videoAnalytics),
-      blocks: videos,
-    });
-  }
+  // Only show the content lists if we have not filtered out all the blocks
+  if (filteredBlocks[0] !== 'no-blocks') {
+    // graded subsections are shown only when unit-filtering is off
+    if (!filteredBlocks.length && gradedSubsections?.length) {
+      contentLists.push({
+        title: intl.formatMessage(messages.gradedSubsectionAnalytics),
+        blocks: castToBlock(gradedSubsections) as Block[],
+      });
+    }
+    if (problems?.length) {
+      contentLists.push({
+        title: intl.formatMessage(messages.problemAnalytics),
+        blocks: problems,
+      });
+    }
+    if (videos?.length) {
+      contentLists.push({
+        title: intl.formatMessage(messages.videoAnalytics),
+        blocks: videos,
+      });
+    }
+  };
 
   return (
     <AspectsSidebar
       title={courseName}
-      blockType={BlockTypes.course}
+      blockType={currentItemData?.category === 'vertical' ? BlockTypes.vertical : BlockTypes.course}
       dashboardId={courseId}
       contentLists={contentLists}
     />

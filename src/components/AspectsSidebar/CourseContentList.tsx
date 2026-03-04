@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button, Icon } from '@openedx/paragon';
 import { ArrowDropDown, ArrowDropUp, ChevronRight } from '@openedx/paragon/icons';
@@ -7,13 +7,12 @@ import { ICON_MAP } from '../../constants';
 import { Block } from '../../types';
 
 interface CourseContentListProps {
-  title: string,
   blocks: Block[],
   activateDashboard: (block: Block) => void,
 }
 
 export function CourseContentList({
-  title, blocks, activateDashboard,
+  blocks, activateDashboard,
 }: CourseContentListProps) {
   const intl = useIntl();
   // using undefined is useful for slicing the list
@@ -24,8 +23,7 @@ export function CourseContentList({
   }
 
   return (
-    <div className="d-flex flex-column rounded-bottom py-4 px-3 bg-white border-top border-light">
-      {!!title && <h4 className="h4 mb-4">{title}</h4>}
+    <div className="d-flex flex-column rounded-bottom py-4 px-3 bg-white">
       {blocks?.slice(0, showCount).map(block => (
         <Button
           key={block.id}

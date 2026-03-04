@@ -1,27 +1,32 @@
-import { IconButton } from '@openedx/paragon';
+import React from 'react';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { Icon, IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
+
+import {
+  useOutlineSidebarContext,
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
+
 import { useAspectsSidebarContext } from '../hooks';
+import messages from '../messages';
 import { Block, SubSection, castToBlock } from '../types';
 
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
-  const {
-    activeBlock, setActiveBlock, setFilterUnit,
-  } = useAspectsSidebarContext();
+  const intl = useIntl();
+  const { setCurrentPageKey, setSelectedContainerState } = useOutlineSidebarContext();
+
   if (!subsection.graded) {
     return null;
   }
+
   return (
     <IconButton
-      alt="Analytics"
-      iconAs={AutoGraph}
-      isActive={activeBlock?.id === subsection.id}
+      alt={intl.formatMessage(messages.analyticsLabel)}
+      iconAs={Icon}
+      src={AutoGraph}
       onClick={() => {
-        if (activeBlock?.id === subsection.id) {
-          setActiveBlock(null);
-        } else {
-          setActiveBlock(castToBlock(subsection) as Block);
-          setFilterUnit(null);
-        }
+        setSelectedContainerState({currentId: subsection.id })
+        setCurrentPageKey('analytics');
       }}
     />
   );

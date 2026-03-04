@@ -31,12 +31,16 @@ export function UnitOutlineAspectsPage({
   const { selectedComponentId } = useUnitSidebarContext();
   const {
     activeBlock,
+    filteredBlocks,
     setActiveBlock,
     setFilteredBlocks,
   } = useAspectsSidebarContext();
 
 
   useEffect(() => {
+    // This effect is called when the selectedComponentId changes.
+    // It sets the activeBlock and filteredBlocks based on the selectedComponentId
+    // and the childBlockData.
     const xBlock = xBlocks.find(xblock => xblock.id === selectedComponentId);
     const block = xBlock && castToBlock(xBlock);
     if (block && ['problem', 'video'].includes(block.type)) {
@@ -47,12 +51,6 @@ export function UnitOutlineAspectsPage({
       setFilteredBlocks([]);
     }
   }, [selectedComponentId]);
-
-  useEffect(() => {
-    if (!activeBlock) {
-      sendMessageToIframe('clearSelection');
-    }
-  }, [activeBlock]);
 
   if (xBlocks && xBlocks.length) {
     const blocks = castToBlock(xBlocks) as Block[];

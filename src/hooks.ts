@@ -1,8 +1,9 @@
+import React from 'react';
 import { camelCaseObject, getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, skipToken } from '@tanstack/react-query';
 import { hookstate, useHookstate } from '@hookstate/core';
-import * as React from 'react';
+
 import type { Block, BlockResponse, UsageId } from './types';
 
 const guestTokenUrl = (courseId: string) => `${getConfig().LMS_BASE_URL}/aspects/superset_guest_token/${courseId}`;
@@ -86,7 +87,7 @@ export const useCourseBlocks = (courseId?: UsageId) => {
   return { data, error };
 };
 
-export const useChildBlockCounts = (usageKey: string) : { data: BlockResponse | undefined, error: Error | null } => {
+export const useChildBlockCounts = (usageKey?: string) : { data: BlockResponse | undefined, error: Error | null } => {
   const url = new URL(`${getConfig().LMS_BASE_URL}/api/courses/v1/blocks/${usageKey}`);
   url.searchParams.append('all_blocks', 'true');
   url.searchParams.append('block_types_filter', 'problem,video');
@@ -94,7 +95,7 @@ export const useChildBlockCounts = (usageKey: string) : { data: BlockResponse | 
 
   return useQuery({
     queryKey: ['child-blocks', usageKey],
-    queryFn: async () => getAuthenticatedHttpClient().get(url.toString()),
+    queryFn: usageKey ? async () => getAuthenticatedHttpClient().get(url.toString()) : skipToken,
     select: (response: { data: BlockResponse }) => (response.data),
   });
 };
