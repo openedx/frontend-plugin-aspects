@@ -66,7 +66,6 @@ Development Setup
 
     .. code-block:: jsx
 
-<<<<<<< HEAD
        import { PLUGIN_OPERATIONS, DIRECT_PLUGIN } from "@openedx/frontend-plugin-framework";
        import {
          UnitActionsButton,

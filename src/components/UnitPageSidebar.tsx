@@ -50,7 +50,7 @@ export function UnitOutlineAspectsPage({
       setActiveBlock(null);
       setFilteredBlocks([]);
     }
-  }, [selectedComponentId]);
+  }, [selectedComponentId, xBlocks]);
 
   if (xBlocks && xBlocks.length) {
     const blocks = castToBlock(xBlocks) as Block[];
