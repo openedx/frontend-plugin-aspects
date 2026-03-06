@@ -7,7 +7,7 @@ import {
   Warning,
 } from '@openedx/paragon/icons';
 
-import { SidebarContent, SidebarSection, SidebarTitle  } from 'CourseAuthoring/generic/sidebar';
+import { SidebarContent, SidebarSection, SidebarTitle } from 'CourseAuthoring/generic/sidebar';
 
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { useAspectsSidebarContext } from '../../hooks';

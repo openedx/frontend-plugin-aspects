@@ -7,9 +7,8 @@ import {
   useOutlineSidebarContext,
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
 
-import { useAspectsSidebarContext } from '../hooks';
 import messages from '../messages';
-import { Block, SubSection, castToBlock } from '../types';
+import type { SubSection } from '../types';
 
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
   const intl = useIntl();
@@ -25,7 +24,7 @@ export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSecti
       iconAs={Icon}
       src={AutoGraph}
       onClick={() => {
-        setSelectedContainerState({currentId: subsection.id })
+        setSelectedContainerState({ currentId: subsection.id });
         setCurrentPageKey('analytics');
       }}
     />

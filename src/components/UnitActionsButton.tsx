@@ -7,9 +7,9 @@ import {
   useOutlineSidebarContext,
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
 
-import { useAspectsSidebarContext, useChildBlockCounts } from '../hooks';
+import { useChildBlockCounts } from '../hooks';
 import messages from '../messages';
-import { Block, Unit, castToBlock } from '../types';
+import type { Unit } from '../types';
 
 export function UnitActionsButton({
   unit,
@@ -28,7 +28,7 @@ export function UnitActionsButton({
       src={AutoGraph}
       iconAs={Icon}
       onClick={() => {
-        setSelectedContainerState({ currentId: unit.id })
+        setSelectedContainerState({ currentId: unit.id });
         setCurrentPageKey('analytics');
       }}
     />

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect,useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { AutoGraph } from '@openedx/paragon/icons';
 
 import {
@@ -13,7 +13,7 @@ import { useIframe } from 'CourseAuthoring/generic/hooks/context/hooks';
 import { BlockTypes } from '../constants';
 import messages from '../messages';
 import { useAspectsSidebarContext } from '../hooks';
-import { castToBlock, XBlock, Block } from '../types';
+import { castToBlock, type XBlock, type Block } from '../types';
 import { AspectsSidebar, ContentList } from './AspectsSidebar';
 
 interface UnitOutlineAspectsPageProps {
@@ -30,12 +30,9 @@ export function UnitOutlineAspectsPage({
 
   const { selectedComponentId } = useUnitSidebarContext();
   const {
-    activeBlock,
-    filteredBlocks,
     setActiveBlock,
     setFilteredBlocks,
   } = useAspectsSidebarContext();
-
 
   useEffect(() => {
     // This effect is called when the selectedComponentId changes.
@@ -50,6 +47,7 @@ export function UnitOutlineAspectsPage({
       setActiveBlock(null);
       setFilteredBlocks([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComponentId, xBlocks]);
 
   if (xBlocks && xBlocks.length) {

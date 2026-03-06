@@ -62,8 +62,7 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
         setFilterUnit(null);
         setFilteredBlocks([]);
         setActiveBlock(castToBlock(currentItemData));
-      }
-      else {
+      } else {
         // We don't have any specific view for Sections, so we'll show the course view
         setActiveBlock(null);
         setFilterUnit(null);
@@ -72,7 +71,8 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
     } else {
       setActiveBlock(null);
       setFilterUnit(null);
-    };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentItemData, childBlockData]);
 
   const contentLists: { title: string, blocks: Block[] }[] = [];
@@ -98,7 +98,7 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
         blocks: videos,
       });
     }
-  };
+  }
 
   return (
     <AspectsSidebar
