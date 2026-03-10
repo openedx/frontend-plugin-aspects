@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { AutoGraph } from '@openedx/paragon/icons';
 
@@ -40,6 +40,7 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
   const { data: courseBlockData } = useCourseBlocks(courseId);
   const { currentItemData } = useOutlineSidebarContext();
   const { data: childBlockData } = useChildBlockCounts(currentItemData?.id);
+  const [showNoAnalyticsMessage, setShowNoAnalyticsMessage] = useState(false);
 
   const gradedSubsections = sections ? Array.from(getGradedSubsections(sections)) : null;
   const problems = courseBlockData?.problems;
@@ -54,22 +55,26 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
         // Show all the blocks of the current unit
         setActiveBlock(castToBlock(currentItemData));
         const childBlocks = childBlockData ? Object.keys(childBlockData.blocks) : [];
-        // If we doesn't have the child blocks, we'll filter out all the blocks
-        setFilteredBlocks(childBlocks.length ? childBlocks : ['no-blocks']);
+        // If we doesn't have the child blocks, show the "no analytics" message
+        setShowNoAnalyticsMessage(childBlocks.length === 0);
+        setFilteredBlocks(childBlocks.length ? childBlocks : []);
         setFilterUnit(castToBlock(currentItemData));
       } else if (currentItemData.category === 'sequential') {
         // Show graded subsections data
-        setFilterUnit(null);
-        setFilteredBlocks([]);
         setActiveBlock(castToBlock(currentItemData));
-      } else {
-        // We don't have any specific view for Sections, so we'll show the course view
-        setActiveBlock(null);
-        setFilterUnit(null);
+        setShowNoAnalyticsMessage(false);
         setFilteredBlocks([]);
+        setFilterUnit(null);
+      } else {
+        // We don't have any specific view for Sections, so we'll show the "no analytics" message
+        setShowNoAnalyticsMessage(true);
+        setActiveBlock(castToBlock(currentItemData));
+        setFilteredBlocks([]);
+        setFilterUnit(null);
       }
     } else {
       setActiveBlock(null);
+      setShowNoAnalyticsMessage(false);
       setFilterUnit(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,8 +82,8 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
 
   const contentLists: { title: string, blocks: Block[] }[] = [];
 
-  // Only show the content lists if we have not filtered out all the blocks
-  if (filteredBlocks[0] !== 'no-blocks') {
+  // Only show the content lists if we have analytics to show
+  if (!showNoAnalyticsMessage) {
     // graded subsections are shown only when unit-filtering is off
     if (!filteredBlocks.length && gradedSubsections?.length) {
       contentLists.push({
@@ -106,6 +111,7 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
       blockType={currentItemData?.category === 'vertical' ? BlockTypes.vertical : BlockTypes.course}
       dashboardId={courseId}
       contentLists={contentLists}
+      showNoAnalyticsMessage={showNoAnalyticsMessage}
     />
   );
 }

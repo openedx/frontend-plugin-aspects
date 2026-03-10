@@ -1,5 +1,5 @@
 import React from 'react';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import { FormattedMessage } from '@edx/frontend-platform/i18n';
 import {
   Alert,
 } from '@openedx/paragon';
@@ -27,6 +27,7 @@ interface AspectsSidebarProps {
   dashboardId: string;
   contentLists: ContentList[];
   blockActivatedCallback?: (block: Block) => void;
+  showNoAnalyticsMessage?: boolean;
 }
 
 export function AspectsSidebar({
@@ -35,8 +36,8 @@ export function AspectsSidebar({
   dashboardId,
   contentLists,
   blockActivatedCallback,
+  showNoAnalyticsMessage,
 }: AspectsSidebarProps) {
-  const intl = useIntl();
   const {
     setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit, filteredBlocks,
@@ -87,6 +88,12 @@ export function AspectsSidebar({
     }
   };
 
+  const messageNoAnalyticsFor = {
+    course: messages.noAnalyticsForCourse,
+    chapter: messages.noAnalyticsForSection,
+    vertical: messages.noAnalyticsForUnit,
+  };
+
   return (
     <div data-testid="sidebar">
       <SidebarTitle
@@ -95,14 +102,16 @@ export function AspectsSidebar({
         onBackBtnClick={activeBlock ? goBack : undefined}
       />
       <SidebarContent>
-        { !hideDashboard && (
+        { !showNoAnalyticsMessage && !hideDashboard && (
           <SidebarSection>
             <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
           </SidebarSection>
         )}
-        {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical)) && (
+        { !showNoAnalyticsMessage && (
+          (activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical)
+        ) && (
           contentLists.map(({ title: listTitle, blocks }) => {
-            const resultBlocks = filteredBlocks.length
+            const resultBlocks = (filteredBlocks && filteredBlocks.length)
               ? blocks.filter((block) => filteredBlocks.includes(block.id))
               : blocks;
 
@@ -116,13 +125,9 @@ export function AspectsSidebar({
             ) : null;
           })
         )}
-        {(hideDashboard && !contentListSize) && (
+        {(showNoAnalyticsMessage || (hideDashboard && !contentListSize)) && (
           <Alert icon={Warning} variant="warning" className="mb-0">
-            {
-              blockType === 'course'
-                ? intl.formatMessage(messages.noAnalyticsForCourse)
-                : intl.formatMessage(messages.noAnalyticsForUnit)
-            }
+            <FormattedMessage {...messageNoAnalyticsFor[activeBlockType]} />
           </Alert>
         )}
       </SidebarContent>

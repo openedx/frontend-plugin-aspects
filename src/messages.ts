@@ -46,6 +46,11 @@ const messages = defineMessages({
     defaultMessage: 'No analytics available for course!',
     description: 'Message to show when there is not analytics available for a course.',
   },
+  noAnalyticsForSection: {
+    id: 'aspects.message.no-analytics-for-section',
+    defaultMessage: 'No analytics available for section!',
+    description: 'Message to show when there is not analytics available for a section.',
+  },
   noAnalyticsForUnit: {
     id: 'aspects.message.no-analytics-for-unit',
     defaultMessage: 'No analytics available for unit!',
