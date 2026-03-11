@@ -60,7 +60,7 @@ function xblockToBlock(xblock: XBlock): Block {
   };
 }
 
-function categoryItemToBlock(item: SubSection | Unit): Block {
+function categoryItemToBlock(item: Section | SubSection | Unit): Block {
   const block: Block = {
     id: item.id,
     displayName: item.displayName,
@@ -73,7 +73,7 @@ function categoryItemToBlock(item: SubSection | Unit): Block {
   return block;
 }
 
-function isCategoryItem(item: SubSection | Unit | XBlock): item is SubSection | Unit {
+function isCategoryItem(item: Section | SubSection | Unit | XBlock): item is Section | SubSection | Unit {
   return 'category' in item;
 }
 
@@ -83,9 +83,9 @@ function isCategoryItem(item: SubSection | Unit | XBlock): item is SubSection | 
  *
  * @param items - Various kinds of blocks received from API and Props
  */
-export function castToBlock(items: SubSection | Unit | XBlock): Block;
+export function castToBlock(items: Section | SubSection | Unit | XBlock): Block;
 export function castToBlock(items: SubSection[] | XBlock[]): Block[];
-export function castToBlock(items: SubSection | SubSection[] | Unit | XBlock | XBlock[]): Block[] | Block {
+export function castToBlock(items: Section | SubSection | SubSection[] | Unit | XBlock | XBlock[]): Block[] | Block {
   if (!Array.isArray(items)) {
     if (isCategoryItem(items)) {
       return categoryItemToBlock(items);

@@ -12,7 +12,7 @@ import '../../styles.css';
 import messages from '../../messages';
 
 function Embed({ usageKey }: { usageKey: string }) {
-  const { loading, error: configError, config: dashboardConfig } = useDashboardConfig(usageKey);
+  const { isPending, error: configError, data: dashboardConfig } = useDashboardConfig(usageKey);
   const containerDiv = React.useRef(null);
   const { courseId } = useParams();
   const [containerHeight, setContainerHeight] = React.useState<number>(0);
@@ -81,14 +81,14 @@ function Embed({ usageKey }: { usageKey: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardConfig, courseId]);
 
-  if (loading) {
+  if (isPending) {
     return <Skeleton />;
   }
 
   if (configError) {
     return (
       <Alert variant="danger">
-        {configError}
+        {configError.toString()}
       </Alert>
     );
   }

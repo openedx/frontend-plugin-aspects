@@ -3,17 +3,20 @@ import { render, screen } from '@testing-library/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 
 import {
+  useOutlineSidebarContext,
+  // @ts-ignore
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
+import {
   useOutlineSidebarPagesContext,
   // @ts-ignore
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarPagesContext';
 
 import { CourseOutlineAspectsPage, CourseOutlineSidebarWrapper } from './CourseOutlineSidebar';
-import { useCourseBlocks, useAspectsSidebarContext } from '../hooks';
+import { useCourseBlocks, useChildBlockCounts, useAspectsSidebarContext } from '../hooks';
 import { AspectsSidebar } from './AspectsSidebar';
 import { BlockTypes } from '../constants';
 import messages from '../messages';
-import { Section, Block } from '../types';
-import '@testing-library/jest-dom';
+import { type Section, type Block, castToBlock } from '../types';
 
 // Mock the AspectsSidebar to check props
 jest.mock('./AspectsSidebar', () => ({
@@ -27,6 +30,7 @@ jest.mock('@edx/frontend-platform/i18n', () => ({
 }));
 jest.mock('../hooks', () => ({
   useCourseBlocks: jest.fn(),
+  useChildBlockCounts: jest.fn(),
   useAspectsSidebarContext: jest.fn(),
 }));
 
@@ -43,6 +47,14 @@ jest.mock(
       useOutlineSidebarPagesContext: useOutlineSidebarPagesContextMocked,
     };
   },
+  { virtual: true },
+);
+
+jest.mock(
+  'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext',
+  () => ({
+    useOutlineSidebarContext: jest.fn(),
+  }),
   { virtual: true },
 );
 
@@ -96,8 +108,14 @@ const mockSections: Section[] = [
           displayName: 'Graded Sub 2',
           graded: true,
           childInfo: {
-            category: 'vertical',
-            children: [],
+            category:
+            'vertical',
+            children: [{
+              id: 'unit-id',
+              category: 'vertical',
+              displayName: 'Unit 1',
+              graded: false,
+            }],
             displayName: 'Unit',
           },
         },
@@ -124,14 +142,37 @@ const mockVideos: Block[] = [
   },
 ];
 
+const mockProblemsBlockCount = {
+  problem1: mockProblems[0],
+  problem2: mockProblems[1],
+};
+
+const mockVideosBlockCount = {
+  video1: mockVideos[0],
+  video2: mockVideos[1],
+};
+
 // Test Suite
 describe('CourseOutlineAspectsPage', () => {
   // Mock implementations setup
   const mockFormatMessage = jest.fn((message) => message.defaultMessage || message.id);
   const mockUseIntl = useIntl as jest.Mock;
   const mockUseCourseBlocks = useCourseBlocks as jest.Mock;
+  const mockUseChildBlockCounts = useChildBlockCounts as jest.Mock;
   const mockUseAspectsSidebarContext = useAspectsSidebarContext as jest.Mock;
   const MockAspectsSidebar = AspectsSidebar as jest.Mock; // Get the mock constructor
+  const mockUseOutlineSidebarContext = useOutlineSidebarContext as jest.Mock;
+
+  const defaultUseAspectsSidebarContext = {
+    filteredBlocks: undefined,
+    setActiveBlock: jest.fn(),
+    setFilterUnit: jest.fn(),
+    setFilteredBlocks: jest.fn(),
+  };
+
+  const defaultUseOutlineSidebarContext = {
+    currenntItemData: undefined,
+  };
 
   beforeEach(() => {
     // Reset mocks before each test
@@ -140,8 +181,10 @@ describe('CourseOutlineAspectsPage', () => {
     // Default mock implementations
     mockUseIntl.mockReturnValue({ formatMessage: mockFormatMessage });
     mockUseCourseBlocks.mockReturnValue({ data: null, isLoading: true }); // Default to loading state
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined }); // Default to no filtering
+    mockUseChildBlockCounts.mockReturnValue({ data: null, isLoading: true }); // Default to loading state
+    mockUseAspectsSidebarContext.mockReturnValue(defaultUseAspectsSidebarContext); // Default to no filtering
     MockAspectsSidebar.mockClear(); // Clear calls specifically for the component mock
+    mockUseOutlineSidebarContext.mockReturnValue(defaultUseOutlineSidebarContext);
   });
 
   const renderComponent = (props: Partial<React.ComponentProps<typeof CourseOutlineAspectsPage>> = {}) => {
@@ -173,7 +216,10 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('displays graded subsections when available and no filtering is active', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] });
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: [],
+    });
     renderComponent({ sections: mockSections });
 
     expect(mockFormatMessage).toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
@@ -185,24 +231,9 @@ describe('CourseOutlineAspectsPage', () => {
           {
             title: expectedGradedTitle,
             blocks: [
-              {
-                id: 'subsection1_1',
-                type: 'sequential',
-                displayName: 'Graded Sub 1',
-                graded: true,
-                childInfo: {
-                  category: 'vertical', children: [], displayName: 'Unit',
-                },
-              },
-              {
-                id: 'subsection2_1',
-                type: 'sequential',
-                displayName: 'Graded Sub 2',
-                graded: true,
-                childInfo: {
-                  category: 'vertical', children: [], displayName: 'Unit',
-                },
-              },
+              // Only graded subsections are shown
+              castToBlock(mockSections[0].childInfo.children[0]),
+              castToBlock(mockSections[1].childInfo.children[0]),
             ],
           },
         ],
@@ -213,7 +244,13 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('displays problems when available', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockProblemsBlockCount,
+        },
+      },
+    });
     renderComponent({ sections: [] }); // No sections to avoid graded list
 
     expect(mockFormatMessage).toHaveBeenCalledWith(messages.problemAnalytics);
@@ -234,7 +271,13 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('displays videos when available', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: mockVideos } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockVideosBlockCount,
+        },
+      },
+    });
     renderComponent({ sections: [] }); // No sections
 
     expect(mockFormatMessage).toHaveBeenCalledWith(messages.videoAnalytics);
@@ -255,7 +298,18 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('displays all available content lists in order (graded, problems, videos) without filtering', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: mockVideos } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: [] });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockProblemsBlockCount,
+          ...mockVideosBlockCount,
+        },
+      },
+    });
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: [],
+    }); // Filtering active
     renderComponent({ sections: mockSections });
 
     const expectedGradedTitle = messages.gradedSubsectionAnalytics.defaultMessage;
@@ -288,7 +342,10 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('does NOT display graded subsections when filtering is active', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: mockVideos } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: ['problem1'] }); // Filtering active
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: ['problem1'],
+    }); // Filtering active
     renderComponent({ sections: mockSections });
 
     expect(MockAspectsSidebar.mock.calls[0][0].contentLists[0].title).not.toEqual(
@@ -298,7 +355,6 @@ describe('CourseOutlineAspectsPage', () => {
 
   it('handles empty data gracefully', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: [], videos: [] } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
     renderComponent({ sections: [] }); // No sections either
 
     expect(MockAspectsSidebar).toHaveBeenCalledWith(
@@ -309,27 +365,108 @@ describe('CourseOutlineAspectsPage', () => {
     );
   });
 
-  it('handles null sections gracefully', () => {
+  it('handles the effects where we have currentItemData set to a Section', () => {
     mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
-    mockUseAspectsSidebarContext.mockReturnValue({ filteredBlocks: undefined });
-    // @ts-expect-error Testing null case even if type doesn't strictly allow it
-    renderComponent({ sections: null });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockProblemsBlockCount,
+        },
+      },
+      error: null,
+    });
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: [],
+    });
+    const mockSection = mockSections[1];
+    mockUseOutlineSidebarContext.mockReturnValue({
+      ...defaultUseOutlineSidebarContext,
+      currentItemData: mockSection,
+    });
 
-    const expectedProblemTitle = messages.problemAnalytics.defaultMessage;
+    renderComponent({ sections: [] });
 
+    expect(defaultUseAspectsSidebarContext.setActiveBlock).toHaveBeenCalledWith(castToBlock(mockSection));
+    expect(defaultUseAspectsSidebarContext.setFilteredBlocks).toHaveBeenCalledWith([]);
+    expect(defaultUseAspectsSidebarContext.setFilterUnit).toHaveBeenCalledWith(null);
+
+    // Sections don't have analytics sidebar
     expect(MockAspectsSidebar).toHaveBeenCalledWith(
       expect.objectContaining({
-        contentLists: [
-          {
-            title: expectedProblemTitle,
-            blocks: mockProblems,
-          },
-        ],
+        showNoAnalyticsMessage: true,
       }),
       {},
     );
-    // Ensure graded section title wasn't attempted
-    expect(mockFormatMessage).not.toHaveBeenCalledWith(messages.gradedSubsectionAnalytics);
+  });
+
+  it('handles the effects where we have currentItemData set to a Subsection', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockProblemsBlockCount,
+        },
+      },
+      error: null,
+    });
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: [],
+    });
+    const mockSubsection = mockSections[1].childInfo.children[0];
+    mockUseOutlineSidebarContext.mockReturnValue({
+      ...defaultUseOutlineSidebarContext,
+      currentItemData: mockSubsection,
+    });
+
+    renderComponent({ sections: [] });
+
+    expect(defaultUseAspectsSidebarContext.setActiveBlock).toHaveBeenCalledWith(castToBlock(mockSubsection));
+    expect(defaultUseAspectsSidebarContext.setFilteredBlocks).toHaveBeenCalledWith([]);
+    expect(defaultUseAspectsSidebarContext.setFilterUnit).toHaveBeenCalledWith(null);
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        showNoAnalyticsMessage: false,
+      }),
+      {},
+    );
+  });
+
+  it('handles the effects where we have currentItemData set to a Unit', () => {
+    mockUseCourseBlocks.mockReturnValue({ data: { problems: mockProblems, videos: [] } });
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          ...mockProblemsBlockCount,
+        },
+      },
+      error: null,
+    });
+    mockUseAspectsSidebarContext.mockReturnValue({
+      ...defaultUseAspectsSidebarContext,
+      filteredBlocks: [],
+    });
+    const mockUnit = mockSections[1].childInfo.children[0].childInfo.children![0];
+    mockUseOutlineSidebarContext.mockReturnValue({
+      ...defaultUseOutlineSidebarContext,
+      currentItemData: mockUnit,
+    });
+
+    renderComponent({ sections: [] });
+
+    const expectedFilteredBlocks = Object.keys(mockProblemsBlockCount);
+    expect(defaultUseAspectsSidebarContext.setActiveBlock).toHaveBeenCalledWith(castToBlock(mockUnit));
+    expect(defaultUseAspectsSidebarContext.setFilteredBlocks).toHaveBeenCalledWith(expectedFilteredBlocks);
+    expect(defaultUseAspectsSidebarContext.setFilterUnit).toHaveBeenCalledWith(castToBlock(mockUnit));
+
+    expect(MockAspectsSidebar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        showNoAnalyticsMessage: false,
+      }),
+      {},
+    );
   });
 });
 

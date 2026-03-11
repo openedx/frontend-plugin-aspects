@@ -85,7 +85,7 @@ export function CourseOutlineAspectsPage({ courseId, courseName, sections }: Cou
   // Only show the content lists if we have analytics to show
   if (!showNoAnalyticsMessage) {
     // graded subsections are shown only when unit-filtering is off
-    if (!filteredBlocks.length && gradedSubsections?.length) {
+    if (!filteredBlocks?.length && gradedSubsections?.length) {
       contentLists.push({
         title: intl.formatMessage(messages.gradedSubsectionAnalytics),
         blocks: castToBlock(gradedSubsections) as Block[],

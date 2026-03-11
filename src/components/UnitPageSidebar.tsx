@@ -19,7 +19,7 @@ import { AspectsSidebar, ContentList } from './AspectsSidebar';
 interface UnitOutlineAspectsPageProps {
   blockId: string;
   unitTitle: string;
-  xBlocks: XBlock[];
+  xBlocks: XBlock[] | null;
 }
 
 export function UnitOutlineAspectsPage({
@@ -38,7 +38,7 @@ export function UnitOutlineAspectsPage({
     // This effect is called when the selectedComponentId changes.
     // It sets the activeBlock and filteredBlocks based on the selectedComponentId
     // and the childBlockData.
-    const xBlock = xBlocks.find(xblock => xblock.id === selectedComponentId);
+    const xBlock = xBlocks?.find(xblock => xblock.id === selectedComponentId);
     const block = xBlock && castToBlock(xBlock);
     if (block && ['problem', 'video'].includes(block.type)) {
       setActiveBlock(block);

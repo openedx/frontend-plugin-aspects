@@ -1,10 +1,9 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BlockTypes } from '../../constants';
-import { AspectsSidebar, ContentList } from '.';
+import { AspectsSidebar, type ContentList } from '.';
 import { useAspectsSidebarContext } from '../../hooks';
 import messages from '../../messages';
-import '@testing-library/jest-dom';
 import { Block } from '../../types';
 
 // Mock dependencies
@@ -14,6 +13,22 @@ jest.mock('@edx/frontend-platform/i18n', () => ({
     formatMessage: (message: { defaultMessage: string }) => message.defaultMessage,
   }),
 }));
+
+/* eslint-disable react/prop-types */
+jest.mock(
+  'CourseAuthoring/generic/sidebar',
+  () => ({
+    SidebarContent: ({ children }) => <div>{children}</div>,
+    SidebarSection: ({ title, children }) => <div><div>{title}</div>{children}</div>,
+    SidebarTitle: ({ title, onBackBtnClick }) => (
+      <div>
+        {onBackBtnClick && <button type="button" onClick={onBackBtnClick}>Back</button>}
+        {title}
+      </div>
+    ),
+  }),
+  { virtual: true },
+);
 
 const mockDashboard = jest.fn();
 jest.mock('./Dashboard', () => ({

@@ -1,4 +1,3 @@
-import React from 'react';
 import { camelCaseObject, getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useQuery, skipToken } from '@tanstack/react-query';
@@ -26,33 +25,13 @@ export type DashBoardConfig = {
   courseRuns: CourseRunFilterConfig[],
 };
 
-export const useDashboardConfig = (usageKey: string) => {
-  const [config, setConfig] = React.useState<DashBoardConfig | null>();
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string>('');
-
-  React.useEffect(() => {
-    if (!usageKey) {
-      return;
-    }
-    (async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const { data } = await getAuthenticatedHttpClient()
-          .get(dashboardUrl(usageKey));
-        setConfig(data);
-        setLoading(false);
-      } catch (e) {
-        setLoading(false);
-        setConfig(null);
-        setError('Dashboard not found.');
-      }
-    })();
-  }, [usageKey]);
-
-  return { loading, error, config };
-};
+export const useDashboardConfig = (usageKey: string) => (
+  useQuery({
+    queryKey: ['dashboard-config', usageKey],
+    queryFn: usageKey ? () => getAuthenticatedHttpClient().get(dashboardUrl(usageKey)) : skipToken,
+    select: (response: { data: DashBoardConfig }) => (response.data),
+  })
+);
 
 const getCourseBlocksUrl = (courseId: string) => {
   const url = new URL(`${getConfig().LMS_BASE_URL}/api/courses/v1/blocks/`);

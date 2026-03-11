@@ -18,6 +18,7 @@ export function CourseContentList({
   // using undefined is useful for slicing the list
   const [showCount, setShowCount] = React.useState<number | undefined>(5);
 
+  // istanbul ignore next: this should never happen, as the component is only rendered when there are blocks
   if (!blocks.length) {
     return null;
   }

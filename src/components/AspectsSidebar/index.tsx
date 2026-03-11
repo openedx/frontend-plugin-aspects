@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormattedMessage } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import {
   Alert,
 } from '@openedx/paragon';
@@ -38,6 +38,8 @@ export function AspectsSidebar({
   blockActivatedCallback,
   showNoAnalyticsMessage,
 }: AspectsSidebarProps) {
+  const intl = useIntl();
+
   const {
     setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit, filteredBlocks,
@@ -89,6 +91,7 @@ export function AspectsSidebar({
   };
 
   const messageNoAnalyticsFor = {
+    undefined: messages.noAnalyticsForCourse,
     course: messages.noAnalyticsForCourse,
     chapter: messages.noAnalyticsForSection,
     vertical: messages.noAnalyticsForUnit,
@@ -96,11 +99,14 @@ export function AspectsSidebar({
 
   return (
     <div data-testid="sidebar">
-      <SidebarTitle
-        title={topTitle}
-        icon={ICON_MAP[activeBlockType]}
-        onBackBtnClick={activeBlock ? goBack : undefined}
-      />
+      <div data-testid="sidebar-title">
+        <SidebarTitle
+          title={topTitle}
+          icon={ICON_MAP[activeBlockType]}
+          onBackBtnClick={activeBlock ? goBack : undefined}
+          data-testid="sidebar-title"
+        />
+      </div>
       <SidebarContent>
         { !showNoAnalyticsMessage && !hideDashboard && (
           <SidebarSection>
@@ -127,7 +133,9 @@ export function AspectsSidebar({
         )}
         {(showNoAnalyticsMessage || (hideDashboard && !contentListSize)) && (
           <Alert icon={Warning} variant="warning" className="mb-0">
-            <FormattedMessage {...messageNoAnalyticsFor[activeBlockType]} />
+            {(activeBlockType in messageNoAnalyticsFor) ? (
+              intl.formatMessage(messageNoAnalyticsFor[activeBlockType])
+            ) : null}
           </Alert>
         )}
       </SidebarContent>
