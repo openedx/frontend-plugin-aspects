@@ -27,5 +27,6 @@ module.exports = {
     // { moduleName: '@openedx/paragon/icons', dir: '../paragon', dist: 'icons' },
     // { moduleName: '@openedx/paragon', dir: '../paragon', dist: 'dist' },
     // { moduleName: '@edx/frontend-platform', dir: '../frontend-platform', dist: 'dist' },
+    // { moduleName: 'CourseAuthoring', dir: '../src', dist: 'dist' },
   ],
 };

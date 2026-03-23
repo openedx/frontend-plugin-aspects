@@ -1,10 +1,9 @@
-import * as React from 'react';
 import {
-  ChromeReaderMode,
   HelpOutline,
   SchoolOutline,
   VideoCamera,
-  ViewAgenda,
+  ViewDay,
+  WidthWide,
 } from '@openedx/paragon/icons';
 
 export enum BlockTypes {
@@ -17,8 +16,8 @@ export enum BlockTypes {
 
 export const ICON_MAP: Record<BlockTypes, React.FC> = {
   [BlockTypes.course]: SchoolOutline,
-  [BlockTypes.sequential]: ViewAgenda,
-  [BlockTypes.vertical]: ChromeReaderMode,
+  [BlockTypes.sequential]: WidthWide,
+  [BlockTypes.vertical]: ViewDay,
   [BlockTypes.problem]: HelpOutline,
   [BlockTypes.video]: VideoCamera,
 };

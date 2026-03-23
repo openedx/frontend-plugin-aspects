@@ -1,30 +1,31 @@
-import * as React from 'react';
-import { IconButton } from '@openedx/paragon';
+import React from 'react';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { Icon, IconButton } from '@openedx/paragon';
 import { AutoGraph } from '@openedx/paragon/icons';
-import { useAspectsSidebarContext } from '../hooks';
-import { Block, SubSection, castToBlock } from '../types';
+
+import {
+  useOutlineSidebarContext,
+} from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
+
+import messages from '../messages';
+import type { SubSection } from '../types';
 
 export function SubSectionAnalyticsButton({ subsection }: { subsection: SubSection }) {
-  const {
-    activeBlock, sidebarOpen, setActiveBlock, setSidebarOpen,
-    setFilterUnit,
-  } = useAspectsSidebarContext();
+  const intl = useIntl();
+  const { setCurrentPageKey, setSelectedContainerState } = useOutlineSidebarContext();
+
   if (!subsection.graded) {
     return null;
   }
+
   return (
     <IconButton
-      alt="Analytics"
-      iconAs={AutoGraph}
-      isActive={sidebarOpen && (activeBlock?.id === subsection.id)}
+      alt={intl.formatMessage(messages.analyticsLabel)}
+      iconAs={Icon}
+      src={AutoGraph}
       onClick={() => {
-        setSidebarOpen(true);
-        if (activeBlock?.id === subsection.id) {
-          setActiveBlock(null);
-        } else {
-          setActiveBlock(castToBlock(subsection) as Block);
-          setFilterUnit(null);
-        }
+        setSelectedContainerState({ currentId: subsection.id });
+        setCurrentPageKey('analytics');
       }}
     />
   );

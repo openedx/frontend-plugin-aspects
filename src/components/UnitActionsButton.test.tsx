@@ -7,8 +7,14 @@ import {
   // @ts-ignore
 } from 'CourseAuthoring/course-outline/outline-sidebar/OutlineSidebarContext';
 
-import { SubSectionAnalyticsButton } from './SubSectionAnalyticsButton';
-import { SubSection } from '../types';
+import { useChildBlockCounts } from '../hooks';
+import { UnitActionsButton } from './UnitActionsButton';
+import type { Unit } from '../types';
+
+// Mock the hooks module
+jest.mock('../hooks', () => ({
+  useChildBlockCounts: jest.fn(),
+}));
 
 // Mock dependencies
 jest.mock('@edx/frontend-platform/i18n', () => ({
@@ -27,41 +33,17 @@ jest.mock(
 );
 
 // Test Data
-const mockSubsections: SubSection[] = [
-  {
-    id: 'subsection1_1',
-    category: 'sequential',
-    displayName: 'Graded Sub 1',
-    graded: true,
-    childInfo: {
-      category: 'vertical', children: [], displayName: 'Unit',
-    },
-  },
-  {
-    id: 'subsection1_2',
-    category: 'sequential',
-    displayName: 'Non-Graded Sub 1',
-    graded: false,
-    childInfo: {
-      category: 'vertical', children: [], displayName: 'Unit',
-    },
-  },
-  {
-    id: 'subsection2_1',
-    category: 'sequential',
-    displayName: 'Graded Sub 2',
-    graded: true,
-    childInfo: {
-      category: 'vertical',
-      children: [],
-      displayName: 'Unit',
-    },
-  },
-];
+const mockUnit: Unit = {
+  category: 'vertical',
+  displayName: 'My Unit',
+  graded: false,
+  id: 'unit-id',
+};
 
 const mockUseOutlineSidebarContext = useOutlineSidebarContext as jest.Mock;
+const mockUseChildBlockCounts = useChildBlockCounts as jest.Mock;
 
-describe('SubSectionAnalyticsButton', () => {
+describe('UnitActionsButton', () => {
   const mockSetCurrentPageKey = jest.fn();
   const mockSetSelectedContainerState = jest.fn();
 
@@ -75,23 +57,30 @@ describe('SubSectionAnalyticsButton', () => {
     mockUseOutlineSidebarContext.mockReturnValue(defaultSidebarContextValue);
   });
 
-  it('does not show analytics button if subsection is not graded', () => {
-    const mockSubsection = mockSubsections[1];
-
-    render(<SubSectionAnalyticsButton subsection={mockSubsection} />);
+  it('does not show analytics button if unit does have any related blocks', () => {
+    mockUseChildBlockCounts.mockReturnValue({ data: { blocks: {}, root: mockUnit.id }, error: null });
+    render(<UnitActionsButton unit={mockUnit} />);
     expect(screen.queryByRole('button', { name: /analytics/i })).toBeNull();
   });
 
   it('opens sidebar and sets current block when clicking button', async () => {
-    const mockSubsection = mockSubsections[0];
+    mockUseChildBlockCounts.mockReturnValue({
+      data: {
+        blocks: {
+          'block-v1:TestX+TST101+2025@problem+block@123abc456def': {},
+        },
+        root: mockUnit.id,
+      },
+      error: null,
+    });
     const user = userEvent.setup();
 
-    render(<SubSectionAnalyticsButton subsection={mockSubsection} />);
+    render(<UnitActionsButton unit={mockUnit} />);
     const button = screen.getByRole('button', { name: /analytics/i });
     await user.click(button);
 
     expect(mockSetSelectedContainerState).toHaveBeenCalledWith(expect.objectContaining({
-      currentId: mockSubsection.id,
+      currentId: mockUnit.id,
     }));
     expect(mockSetCurrentPageKey).toHaveBeenCalledWith('analytics');
   });

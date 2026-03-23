@@ -1,18 +1,20 @@
+import React from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import * as React from 'react';
 import {
-  Alert, Icon, IconButton, IconButtonWithTooltip, Stack, Sticky,
+  Alert,
 } from '@openedx/paragon';
 import {
-  ArrowBack, AutoGraph, Close, Warning,
+  Warning,
 } from '@openedx/paragon/icons';
+
+import { SidebarContent, SidebarSection, SidebarTitle } from 'CourseAuthoring/generic/sidebar';
+
 import { BlockTypes, ICON_MAP } from '../../constants';
 import { useAspectsSidebarContext } from '../../hooks';
-
 import messages from '../../messages';
+import { Block } from '../../types';
 import { CourseContentList } from './CourseContentList';
 import { Dashboard } from './Dashboard';
-import { Block } from '../../types';
 
 export type ContentList = {
   title: string;
@@ -25,6 +27,7 @@ interface AspectsSidebarProps {
   dashboardId: string;
   contentLists: ContentList[];
   blockActivatedCallback?: (block: Block) => void;
+  showNoAnalyticsMessage?: boolean;
 }
 
 export function AspectsSidebar({
@@ -33,10 +36,12 @@ export function AspectsSidebar({
   dashboardId,
   contentLists,
   blockActivatedCallback,
+  showNoAnalyticsMessage,
 }: AspectsSidebarProps) {
   const intl = useIntl();
+
   const {
-    sidebarOpen, setSidebarOpen, setFilteredBlocks, activeBlock, setActiveBlock,
+    setFilteredBlocks, activeBlock, setActiveBlock,
     filterUnit, setFilterUnit, filteredBlocks,
   } = useAspectsSidebarContext();
 
@@ -51,10 +56,6 @@ export function AspectsSidebar({
     setFilteredBlocks([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  if (!sidebarOpen) {
-    return null;
-  }
 
   const hideDashboard: boolean = (
     (!!activeBlock && (activeBlock.type === 'vertical'))
@@ -76,6 +77,7 @@ export function AspectsSidebar({
     // Go back to the filtered view of the unit
     if (filterUnit && (activeBlock?.id !== filterUnit.id)) {
       setActiveBlock(filterUnit);
+      setFilteredBlocks([]);
     } else if (filterUnit?.id === activeBlock?.id) {
       // Viewing the filtered view of a unit - go back to full course view
       setActiveBlock(null);
@@ -84,84 +86,59 @@ export function AspectsSidebar({
     } else {
       // reset to default view for all other cases
       setActiveBlock(null);
+      setFilteredBlocks([]);
     }
   };
 
-  return (
-    <div className="w-100 h-100" data-testid="sidebar">
-      <Sticky className="shadow rounded" offset={2}>
-        <div className="bg-white rounded w-100">
-          <Stack className="sidebar-header">
-            <Stack className="course-unit-sidebar-header px-4 pt-4" direction="horizontal">
-              <h5 className="course-unit-sidebar-header-title h5 flex-grow-1 text-gray">
-                {intl.formatMessage(messages.analyticsLabel)}
-                <Icon
-                  src={AutoGraph}
-                  size="xs"
-                  className="d-inline-block ml-1"
-                  aria-hidden
-                  style={{ verticalAlign: 'middle' }}
-                />
-              </h5>
-              <IconButtonWithTooltip
-                className="ml-auto"
-                tooltipContent={intl.formatMessage(messages.closeButtonLabel)}
-                tooltipPlacement="top"
-                alt={intl.formatMessage(messages.closeButtonLabel)}
-                src={Close}
-                iconAs={Icon}
-                variant="black"
-                onClick={() => {
-                  setSidebarOpen(false);
-                }}
-                size="sm"
-              />
-            </Stack>
-            <h3 className="h3 px-4 pb-4 mb-0 d-flex align-items-center" data-testid="sidebar-title">
-              {(activeBlock) && (
-                <IconButton
-                  className="mr-2"
-                  alt={intl.formatMessage(messages.backButtonLabel)}
-                  src={ArrowBack}
-                  iconAs={Icon}
-                  onClick={() => goBack()}
-                  size="sm"
-                />
-              )}
-              <Icon
-                src={ICON_MAP[activeBlockType]}
-                size="sm"
-                className="d-inline-block mr-2 text-gray"
-                aria-hidden
-              />
-              <span>{topTitle}</span>
-            </h3>
-          </Stack>
-          { !hideDashboard && (
-            <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
-          )}
-          {((activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical))
-            && contentLists.map(({ title: listTitle, blocks }) => (
-              <CourseContentList
-                key={listTitle}
-                title={listTitle}
-                blocks={filteredBlocks.length ? blocks.filter((block) => filteredBlocks.includes(block.id)) : blocks}
-                activateDashboard={activateDashboard}
-              />
-            ))}
+  const messageNoAnalyticsFor = {
+    undefined: messages.noAnalyticsForCourse,
+    course: messages.noAnalyticsForCourse,
+    chapter: messages.noAnalyticsForSection,
+    vertical: messages.noAnalyticsForUnit,
+  };
 
-          {(hideDashboard && !contentListSize)
-            && (
-            <Alert icon={Warning} variant="warning" className="mb-0">
-              {
-                blockType === 'course'
-                  ? intl.formatMessage(messages.noAnalyticsForCourse)
-                  : intl.formatMessage(messages.noAnalyticsForUnit)
-              }
-            </Alert>
-            )}
-        </div>
-      </Sticky>
+  return (
+    <div data-testid="sidebar">
+      <div data-testid="sidebar-title">
+        <SidebarTitle
+          title={topTitle}
+          icon={ICON_MAP[activeBlockType]}
+          onBackBtnClick={activeBlock ? goBack : undefined}
+          data-testid="sidebar-title"
+        />
+      </div>
+      <SidebarContent>
+        { !showNoAnalyticsMessage && !hideDashboard && (
+          <SidebarSection>
+            <Dashboard usageKey={activeBlock?.id || dashboardId} title={topTitle} />
+          </SidebarSection>
+        )}
+        { !showNoAnalyticsMessage && (
+          (activeBlockType === BlockTypes.course) || (activeBlockType === BlockTypes.vertical)
+        ) && (
+          contentLists.map(({ title: listTitle, blocks }) => {
+            const resultBlocks = (filteredBlocks && filteredBlocks.length)
+              ? blocks.filter((block) => filteredBlocks.includes(block.id))
+              : blocks;
+
+            return resultBlocks.length ? (
+              <SidebarSection key={listTitle} title={listTitle}>
+                <CourseContentList
+                  blocks={resultBlocks}
+                  activateDashboard={activateDashboard}
+                />
+              </SidebarSection>
+            ) : null;
+          })
+        )}
+        {(showNoAnalyticsMessage || (hideDashboard && !contentListSize)) && (
+          <Alert icon={Warning} variant="warning" className="mb-0">
+            {(activeBlockType in messageNoAnalyticsFor) ? (
+              intl.formatMessage(messageNoAnalyticsFor[activeBlockType])
+            ) : null}
+          </Alert>
+        )}
+      </SidebarContent>
     </div>
   );
 }
