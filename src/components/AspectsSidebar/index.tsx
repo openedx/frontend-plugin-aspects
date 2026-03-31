@@ -76,8 +76,8 @@ export function AspectsSidebar({
     // Currently viewing component dashboard of a filtered view of a specific unit
     // Go back to the filtered view of the unit
     if (filterUnit && (activeBlock?.id !== filterUnit.id)) {
+      // Viewing a component inside a filtered view of a unit - go back to the filtered view of the unit
       setActiveBlock(filterUnit);
-      setFilteredBlocks([]);
     } else if (filterUnit?.id === activeBlock?.id) {
       // Viewing the filtered view of a unit - go back to full course view
       setActiveBlock(null);
