@@ -6,11 +6,6 @@ const messages = defineMessages({
     defaultMessage: 'Analytics',
     description: 'Label for the analytics buttons on the course outline and unit header etc.',
   },
-  closeButtonLabel: {
-    id: 'aspects.button.close.alt',
-    defaultMessage: 'Close',
-    description: 'Label for the close icon button in the sidebar.',
-  },
   backButtonLabel: {
     id: 'aspects.button.back.alt',
     defaultMessage: 'Back',
@@ -50,6 +45,11 @@ const messages = defineMessages({
     id: 'aspects.message.no-analytics-for-course',
     defaultMessage: 'No analytics available for course!',
     description: 'Message to show when there is not analytics available for a course.',
+  },
+  noAnalyticsForSection: {
+    id: 'aspects.message.no-analytics-for-section',
+    defaultMessage: 'No analytics available for section!',
+    description: 'Message to show when there is not analytics available for a section.',
   },
   noAnalyticsForUnit: {
     id: 'aspects.message.no-analytics-for-unit',

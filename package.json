@@ -1,6 +1,6 @@
 {
   "name": "@openedx/frontend-plugin-aspects",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "description": "Frontend application template",
   "repository": {
     "type": "git",
