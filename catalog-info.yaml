@@ -25,4 +25,4 @@ metadata:
 spec:
   owner: group:committers-frontend
   type: "library"
-  lifecycle: "experimental"
+  lifecycle: "production"
