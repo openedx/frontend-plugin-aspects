@@ -45,6 +45,15 @@ Enable In-Context Metrics
        tutor images build openedx --no-cache
        tutor images build aspects aspects-superset
 
+Dashboard Theme
+---------------
+The embedded dashboards follow the theme of the Authoring MFE rather than the OS colour scheme: the
+light or dark mode, and the brand colours of the page's Paragon theme (``--pgn-color-primary-base``,
+``--pgn-color-link-base``, ``--pgn-color-btn-text-primary``), so any brand reaches the dashboards
+without configuring Superset. Switching the theme reloads the dashboard. The theme is sent with
+``setThemeConfig`` (Superset 6.0+) and replaces Superset's ``THEME_DEFAULT`` / ``THEME_DARK`` in the
+embedded view; chart colours come from Superset's colour schemes and are not affected.
+
 Development Setup
 -----------------
 
